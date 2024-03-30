@@ -11,7 +11,8 @@
 }
 
 #let page_header = context {
-  let chapter_heading_on_page = query(heading.where(level: 1), here()).find(h => h.location().page() == here().page()) != none
+  let next_chapters = query(selector(heading.where(level: 1)).after(here()))
+  let chapter_heading_on_page = next_chapters.find(h => h.location().page() == here().page()) != none
   if chapter_heading_on_page {
     return
   }
