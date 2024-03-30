@@ -52,7 +52,8 @@
 }
 
 #let titlepage(title, author, type, lang, institute, birthplace, date) = {
-  set page(numbering: none)
+  // turn off all default page settings from the document body for this block
+  set page(numbering: none, header: {})
   set align(center)
 
   text(2em, weight: 700, title)
