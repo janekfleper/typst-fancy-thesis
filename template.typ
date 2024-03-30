@@ -28,7 +28,7 @@
 
     // the counter returns an array...
     let (page_count, ) = counter(page).get()
-    if (calc.rem(page_count, 2) == 0) {
+    if calc.even(page_count) {
       let chapter = chapters.last()
       // explicitely select the chapter counter by specifying the depth
       let chapter_number = counter(selector(heading.where(depth: 1))).display()
