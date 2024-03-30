@@ -121,6 +121,6 @@
   counter(page).update(1)
   body
 
-  styledOutline("List of Figures", outlined: true)
-  styledOutline("List of Tables", outlined: true)
+  styledOutline("List of Figures", target: figure.where(kind: figure), outlined: true)
+  styledOutline("List of Tables", target: figure.where(kind: table), outlined: true)
 }
