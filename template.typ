@@ -51,6 +51,29 @@
   return h(1fr) + section.supplement + " " + section_number + h(0.7em) + section.body + _underline
 }
 
+#let styledOutline(
+  title,
+  target: heading.where(outlined: true),
+  depth: 3,
+  indent: auto,
+  fill: repeat([.]),
+  outlined: false
+  ) = {
+  // override the show-rule for the chapter heading
+  show heading: it => {
+    set text(size: 24pt)
+    it.body
+    line(length: 100%)
+    v(1em)
+  }
+
+  pagebreak(weak: true)
+  // use a dummy heading to allow the "outlined" parameter to be applied to the outline
+  heading(depth: 1, numbering: none, outlined: outlined)[#title]
+  show heading: none // completely hide the actual title of the outline
+  outline(title: "", target: target, depth: depth, indent: indent, fill: fill)
+}
+
 #let thesis(
   title: "",
   author: "",
@@ -88,5 +111,16 @@
 
   titlepage(title, author, type, lang, institute, birthplace, date)
 
+  // apply some styles specific to the front matter
+  {
+    set page(numbering: "i")
+    counter(page).update(1)
+    styledOutline("Contents")
+  }
+
+  counter(page).update(1)
   body
+
+  styledOutline("List of Figures", outlined: true)
+  styledOutline("List of Tables", outlined: true)
 }
