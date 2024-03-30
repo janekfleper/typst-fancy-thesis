@@ -64,6 +64,19 @@
     header: page_header,
   )
   set heading(numbering: "1.1", supplement: heading_supplement)
+  show heading.where(level: 1): it => {
+    let chapter_number = locate(loc => counter(heading).at(loc).first())
+    pagebreak(to: "odd")
+    v(2em)
+    h(1fr) + "CHAPTER " + chapter_number
+    v(1em)
+
+    set text(size: 24pt)
+    line(length: 100%)
+    text(it.body)
+    line(length: 100%)
+    v(1em)
+  }
 
   let body-font = "New Computer Modern"
   set text(font: body-font, size: 12pt, lang: lang)
