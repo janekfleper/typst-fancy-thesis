@@ -18,9 +18,27 @@
     return "no chapters yet..."
   }
 
-  let chapter = chapters.last()
-  let chapter_number = counter(selector(heading.where(depth: 1))).display()
-  return chapter.supplement + " " + chapter_number + h(0.7em) + chapter.body
+  // the counter returns an array...
+  let (page_count, ) = counter(page).get()
+  if (calc.rem(page_count, 2) == 0) {
+    let chapter = chapters.last()
+    // explicitely select the chapter counter by specifying the depth
+    let chapter_number = counter(selector(heading.where(depth: 1))).display()
+    return chapter.supplement + " " + chapter_number + h(0.7em) + chapter.body
+  }
+
+  // get all headings of depth 1 and depth 2 to check if the most recent heading is a "section"
+  let headings = query(selector(heading.where(depth: 1).or(heading.where(depth: 2))).before(here()))
+  if (headings.last().depth == 1) {
+    return "no sections yet..."
+  }
+
+  let section = headings.last()
+  // using the selector(heading.where(depth: 2)) will just count the sections on their own
+  // instead of the sections numbers 1.1, 1.2, 2.1 the output will be 0.1, 0.2, 0.3
+  // since the most recent heading is a section, it is fine to directly use the heading counter
+  let section_number = counter(heading).display()
+  return section.supplement + " " + section_number + h(0.7em) + section.body
 }
 
 #let thesis(
