@@ -12,10 +12,11 @@
 
 #let page_header = context {
   set text(10pt)
+  let _underline = move(dx: 0pt, dy: -0.7em, line(length: 100%))
 
   let chapters = query(selector(heading.where(depth: 1)).before(here()))
   if chapters.len() == 0 {
-    return "no chapters yet..."
+    return "no chapters yet..." + _underline
   }
 
   // the counter returns an array...
@@ -24,7 +25,7 @@
     let chapter = chapters.last()
     // explicitely select the chapter counter by specifying the depth
     let chapter_number = counter(selector(heading.where(depth: 1))).display()
-    return chapter.supplement + " " + chapter_number + h(0.7em) + chapter.body
+    return chapter.supplement + " " + chapter_number + h(0.7em) + chapter.body + _underline
   }
 
   // select all chapters (depth = 1) and sections (depth = 2)
@@ -34,7 +35,7 @@
 
   let headings = query(chapter_section_selector.before(here()))
   if (headings.last().depth == 1) {
-    return h(1fr) + "no sections yet..."
+    return h(1fr) + "no sections yet..." + _underline
   }
 
   let section = headings.last()
@@ -42,7 +43,7 @@
   // instead of the sections numbers 1.1, 1.2, 2.1 the output will be 0.1, 0.2, 0.3
   // the chapter_section_selector will ensure that the correct section number is used
   let section_number = counter(chapter_section_selector).display()
-  return h(1fr) + section.supplement + " " + section_number + h(0.7em) + section.body
+  return h(1fr) + section.supplement + " " + section_number + h(0.7em) + section.body + _underline
 }
 
 #let thesis(
