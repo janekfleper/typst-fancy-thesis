@@ -1,7 +1,7 @@
 #import "template.typ": thesis
 
 #show: thesis.with(
-  title: "Blazingly Fast Typesetting",
+  title: "Blazingly Fast Thesis Typesetting",
   author: "Your Name",
   type: "phd",
   lang: "en",
