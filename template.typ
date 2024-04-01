@@ -78,7 +78,7 @@
   // override the show-rule for the chapter heading
   show heading: it => {
     set text(size: 24pt)
-    it.body
+    text(it.body)
     line(length: 100%)
     v(1em)
   }
