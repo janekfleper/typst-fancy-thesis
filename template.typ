@@ -11,10 +11,26 @@
 }
 
 #let page_header = context {
-  let next_chapters = query(selector(heading.where(level: 1)).after(here()))
-  let chapter_heading_on_page = next_chapters.find(h => h.location().page() == here().page()) != none
-  if chapter_heading_on_page {
-    return
+  // handle pages with a <new-chapter> label
+  let new_chapter_labels = query(selector(<new-chapter>).after(here()))
+  if new_chapter_labels.len() > 0 {
+    if new_chapter_labels.first().location().page() == here().page() {
+      return
+    }
+  }
+
+  // handle pages with an <empty-page> label
+  // since the page breaks in chapter_heading() are inserted after the <empty-page> label,
+  // the selector has to look "before" the current page to find the relevant label
+  let empty_page_labels = query(selector(<empty-page>).before(here()))
+  if empty_page_labels.len() > 0 {
+    let empty_page = empty_page_labels.last().location().page()
+    // also look back at the most recent <new-chapter> label
+    let new_chapter = query(selector(<new-chapter>).before(here())).last().location().page()
+    // make sure that the <empty-page> label and the <new-chapter> label are not on the same page
+    if (empty_page != new_chapter) and (empty_page + 1 == here().page()) {
+      return
+    }
   }
 
   set text(10pt)
@@ -52,20 +68,26 @@
   return h(1fr) + section.supplement + " " + section_number + h(0.7em) + section.body + _underline
 }
 
-#let chapter_heading(it) = {
-  let chapter_number = locate(loc => counter(heading).at(loc).first())
-  pagebreak(to: "odd")
-  v(2em)
-  h(1fr) + "CHAPTER " + chapter_number
-  v(1em)
+// labels can only be used in markup mode
+#let chapter_heading(it) = [
+  #let (page_count, ) = counter(page).get()
+  #[] <empty-page>
+  #pagebreak(to: "even", weak: true)
+  #[] <new-chapter>
+  #pagebreak(to: "odd", weak: true)
+
+  #let chapter_number = locate(loc => counter(heading).at(loc).first())
+  #v(2em)
+  #h(1fr) CHAPTER #chapter_number
+  #v(1em)
 
   // the set rule for the text also applies to the lines
-  set text(size: 24pt)
-  line(length: 100%)
-  text(it.body)
-  line(length: 100%)
-  v(1em)
-}
+  #set text(size: 24pt)
+  #line(length: 100%)
+  #text(it.body)
+  #line(length: 100%)
+  #v(1em)
+]
 
 #let styledOutline(
   title,
