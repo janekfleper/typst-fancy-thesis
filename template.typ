@@ -68,6 +68,28 @@
   return h(1fr) + section.supplement + " " + section_number + h(0.7em) + section.body + _underline
 }
 
+#let page_footer = context {
+  // compared to the header, the footer is only supposed to be omitted on empty pages
+  // the pages with the <new-chapter> label therefore have to be conserved 
+  //
+  // since the page breaks in chapter_heading() are inserted after the <empty-page> label,
+  // the selector has to look "before" the current page to find the relevant label
+  let empty_page_labels = query(selector(<empty-page>).before(here()))
+  if empty_page_labels.len() > 0 {
+    let empty_page = empty_page_labels.last().location().page()
+    // look back at the most recent <new-chapter> label
+    let new_chapter = query(selector(<new-chapter>).before(here())).last().location().page()
+    // check that there is no <new-chapter> label on the current page
+    if (new_chapter != here().page()) and (empty_page + 1 == here().page()) {
+      return
+    }
+  }
+
+  // left/right align the page number on even/odd pages
+  let page_display = counter(page).display(here().page-numbering())
+  return if calc.even(here().page()) { page_display } else { h(1fr) + page_display }
+}
+
 // labels can only be used in markup mode
 #let chapter_heading(it) = [
   #let (page_count, ) = counter(page).get()
@@ -128,6 +150,7 @@
     numbering: "1",
     number-align: center,
     header: page_header,
+    footer: page_footer,
   )
   set heading(numbering: "1.1", supplement: heading_supplement)
   show heading.where(level: 1): it => chapter_heading(it)
