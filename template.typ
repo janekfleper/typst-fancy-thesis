@@ -155,6 +155,7 @@
   set heading(numbering: "1.1", supplement: heading_supplement)
   show heading.where(level: 1): it => chapter_heading(it)
 
+  set par(justify: true, first-line-indent: 1em)
   let body-font = "New Computer Modern"
   set text(font: body-font, size: 12pt, lang: lang)
 
