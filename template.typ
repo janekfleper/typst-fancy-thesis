@@ -10,10 +10,15 @@
   }
 }
 
+#let find_labels(name) = {
+  // wrapping the label "name" in a selector() is only necessary to use the modifiers
+  // .or(), .and(), .before() or .after()
+  return query(name).map(label => label.location().page())
+}
+
 #let page_header = context {
-  // query for all <empty-page> and <new-chapter> label locations
-  let empty_pages = query(selector(<empty-page>)).map(label => label.location().page())
-  let new_chapters = query(selector(<new-chapter>)).map(label => label.location().page())
+  let empty_pages = find_labels(<empty-page>)
+  let new_chapters = find_labels(<new-chapter>)
   if new_chapters.len() > 0 {
     if new_chapters.contains(here().page()) {
       return
@@ -31,7 +36,7 @@
 
   // query for all <outline> label locations
   // the (possible) further pages of outline chapters are handled later
-  let outlines = query(selector(<outline>)).map(label => label.location().page())
+  let outlines = find_labels(<outline>)
   if outlines.contains(here().page()) {
     return
   }
