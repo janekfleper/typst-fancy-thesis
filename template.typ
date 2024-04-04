@@ -29,12 +29,24 @@
     }
   }
 
+  // query for all <outline> label locations
+  // the (possible) further pages of outline chapters are handled later
+  let outlines = query(selector(<outline>)).map(label => label.location().page())
+  if outlines.contains(here().page()) {
+    return
+  }
+
   set text(10pt)
   let _underline = move(dx: 0pt, dy: -0.7em, line(length: 100%))
 
   let chapters = query(selector(heading.where(depth: 1)).before(here()))
   if chapters.len() == 0 {
     return "no chapters yet..." + _underline
+  } else {
+    // remove the heading on further pages of outline chapters
+    if chapters.last().numbering == none {
+      return
+    }
   }
 
   // the counter returns an array...
@@ -114,21 +126,21 @@
   indent: auto,
   fill: repeat([.]),
   outlined: false
-  ) = {
+  ) = [
   // override the show-rule for the chapter heading
-  show heading: it => {
+  #show heading: it => {
     set text(size: 24pt)
     text(it.body)
     line(length: 100%)
     v(1em)
   }
 
-  pagebreak(weak: true)
+  #pagebreak(weak: true)
   // use a dummy heading to allow the "outlined" parameter to be applied to the outline
-  heading(depth: 1, numbering: none, outlined: outlined)[#title]
-  show heading: none // completely hide the actual title of the outline
-  outline(title: "", target: target, depth: depth, indent: indent, fill: fill)
-}
+  #heading(depth: 1, numbering: none, outlined: outlined)[#title] <outline>
+  #show heading: none // completely hide the actual title of the outline
+  #outline(title: "", target: target, depth: depth, indent: indent, fill: fill)
+]
 
 #let thesis(
   title: "",
