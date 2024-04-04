@@ -11,25 +11,21 @@
 }
 
 #let page_header = context {
-  // handle pages with a <new-chapter> label
-  let new_chapter_labels = query(selector(<new-chapter>).after(here()))
-  if new_chapter_labels.len() > 0 {
-    if new_chapter_labels.first().location().page() == here().page() {
+  // query for all <empty-page> and <new-chapter> label locations
+  let empty_pages = query(selector(<empty-page>)).map(label => label.location().page())
+  let new_chapters = query(selector(<new-chapter>)).map(label => label.location().page())
+  if new_chapters.len() > 0 {
+    if new_chapters.contains(here().page()) {
       return
     }
-  }
 
-  // handle pages with an <empty-page> label
-  // since the page breaks in chapter_heading() are inserted after the <empty-page> label,
-  // the selector has to look "before" the current page to find the relevant label
-  let empty_page_labels = query(selector(<empty-page>).before(here()))
-  if empty_page_labels.len() > 0 {
-    let empty_page = empty_page_labels.last().location().page()
-    // also look back at the most recent <new-chapter> label
-    let new_chapter = query(selector(<new-chapter>).before(here())).last().location().page()
-    // make sure that the <empty-page> label and the <new-chapter> label are not on the same page
-    if (empty_page != new_chapter) and (empty_page + 1 == here().page()) {
-      return
+    // get the index of the next <new-chapter> label
+    let new_chapter_index = new_chapters.position(page => page > here().page())
+    if new_chapter_index != none {
+      let empty_page = empty_pages.at(new_chapter_index)
+      if empty_page < here().page() {
+        return
+      }
     }
   }
 
