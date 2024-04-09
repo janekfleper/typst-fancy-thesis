@@ -2,17 +2,18 @@
 
 // Change the default heading supplement based on the depth
 //
+// The supplement uses the `text.lang` in the current context.
+// Only the languages "en" (English) and "de" (German) are supported.
+//
 // This function is supposed to be used in the set rule for headings
 // ```
 // set heading(supplement: heading-supplement)`
 // ```
-#let heading-supplement(it) = {
-  if it.depth == 1 {
-    return [Chapter]
-  } else if (it.depth == 2) {
-    return [Section]
-  } else if (it.depth == 3) {
-    return [Subsection]
+#let heading-supplement(it) = context {
+  if text.lang == "en" {
+    ([Chapter], [Section], [Subsection]).at(it.depth - 1, default: [])
+  } else if text.lang == "de" {
+    ([Kapitel], [Abschnitt], [Unterabschnitt]).at(it.depth - 1, default: [])
   }
 }
 
@@ -119,7 +120,7 @@
 
   #let chapter-number = locate(loc => counter(heading).at(loc).first())
   #v(2em)
-  #h(1fr) CHAPTER #chapter-number
+  #h(1fr) #upper[#it.supplement] #chapter-number
   #v(1em)
 
   // the set rule for the text also applies to the lines
