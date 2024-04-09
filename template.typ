@@ -190,20 +190,20 @@
 // used for the outline title. This is done to add the <outline> label to this
 // page which is required to hide the page-header.
 //
-// - title (str, none, auto, content): Title, defaults to "Contents"
+// - title (str, auto, none, content): Title, defaults to "Contents"
 // - target (label, selector, location, function): Elements to include in the table of contents, defaults to `heading.where(outlined: true)`
 // - depth (int, none): Maximum depth to show in the table of contents, defaults to 3
 // - indent (auto, none, bool, relative, function): Indent of the outline entries, defaults to auto
 // - fill (content, none): Content to fill the space in the outline entries, defaults to [.]
 // -> content
 #let table-of-contents(
-  title: none,
+  title: auto,
   target: heading.where(outlined: true),
   depth: 3,
   indent: auto,
   fill: repeat[.]
 ) = [
-  #if title == none { title = "Contents" }
+  #if title == auto { title = "Contents" }
   #show heading: outline-heading
   #heading(depth: 1, numbering: none, outlined: false)[#title] <outline>
   #outline(title: none, target: target, depth: depth, indent: indent, fill: fill)
@@ -218,14 +218,14 @@
 // `outlined` of the heading is set to `true` to include the list of figures in
 // the table of contents.
 //
-// - title (str, none, auto, content): Title, defaults to "List of Figures"
+// - title (str, auto, none, content): Title, defaults to "List of Figures"
 // - target (label, selector, location, function): Elements to include in the list of figures, defaults to `figure.where(kind: figure)`
 // -> content
 #let list-of-figures(
-  title: none,
+  title: auto,
   target: figure.where(kind: figure),
 ) = [
-  #if title == none { title = "List of Figures" }
+  #if title == auto { title = "List of Figures" }
   #show heading: outline-heading
   #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
   #outline(title: none, target: target)
@@ -240,14 +240,14 @@
 // `outlined` of the heading is set to `true` to include the list of tables in
 // the table of contents.
 //
-// - title (str, none, auto, content): Title, defaults to "List of Tables"
+// - title (str, auto, none, content): Title, defaults to "List of Tables"
 // - target (label, selector, location, function): Elements to include in the list of tables, defaults to `figure.where(kind: table)`
 // -> content
 #let list-of-tables(
-  title: none,
+  title: auto,
   target: figure.where(kind: table),
 ) = [
-  #if title == none { title = "List of Tables" }
+  #if title == auto { title = "List of Tables" }
   #show heading: outline-heading
   #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
   #outline(title: none, target: target)
