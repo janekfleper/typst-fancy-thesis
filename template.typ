@@ -17,10 +17,15 @@
   }
 }
 
+// Find the pages where a certain label is used
+//
+// - name (label): Label to query
+// -> array of int
+//
+// Wrapping the label `name` in a `selector()` would only be necessary to use
+// the modifiers `.or()`, `.and()`, `.before()` or `.after()`.
 #let find-labels(name) = {
-  // wrapping the label "name" in a selector() is only necessary to use the modifiers
-  // .or(), .and(), .before() or .after()
-  return query(name).map(label => label.location().page())
+  query(name).map(label => label.location().page())
 }
 
 #let page-header = context {
