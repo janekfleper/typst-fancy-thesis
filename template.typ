@@ -110,23 +110,17 @@
 // The page numbers are aligned to the left/right on even/odd pages which is
 // always the 'outside' alignment when the document is printed.
 #let page-footer = context {
-  // compared to the header, the footer is only supposed to be omitted on empty pages
-  // the pages with the <new-chapter> label therefore have to be conserved 
-  //
-  // since the page breaks in chapter-heading() are inserted after the <empty-page> label,
-  // the selector has to look "before" the current page to find the relevant label
   let empty-page-labels = query(selector(<empty-page>).before(here()))
   if empty-page-labels.len() > 0 {
     let empty-page = empty-page-labels.last().location().page()
     let new-chapter = query(selector(<new-chapter>).before(here())).last().location().page()
     if (new-chapter != here().page()) and (empty-page + 1 == here().page()) {
-      return
+      return none 
     }
   }
 
-  // left/right align the page number on even/odd pages
   let page-display = counter(page).display(here().page-numbering())
-  return if calc.even(here().page()) { page-display } else { h(1fr) + page-display }
+  if calc.even(here().page()) { page-display } else { h(1fr) + page-display }
 }
 
 // labels can only be used in markup mode
