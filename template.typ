@@ -1,6 +1,6 @@
 #import "titlepage.typ": titlepage
 
-#let heading_supplement(it) = {
+#let heading-supplement(it) = {
   if it.depth == 1 {
     return [Chapter]
   } else if (it.depth == 2) {
@@ -10,25 +10,25 @@
   }
 }
 
-#let find_labels(name) = {
+#let find-labels(name) = {
   // wrapping the label "name" in a selector() is only necessary to use the modifiers
   // .or(), .and(), .before() or .after()
   return query(name).map(label => label.location().page())
 }
 
-#let page_header = context {
-  let empty_pages = find_labels(<empty-page>)
-  let new_chapters = find_labels(<new-chapter>)
-  if new_chapters.len() > 0 {
-    if new_chapters.contains(here().page()) {
+#let page-header = context {
+  let empty-pages = find-labels(<empty-page>)
+  let new-chapters = find-labels(<new-chapter>)
+  if new-chapters.len() > 0 {
+    if new-chapters.contains(here().page()) {
       return
     }
 
     // get the index of the next <new-chapter> label
-    let new_chapter_index = new_chapters.position(page => page > here().page())
-    if new_chapter_index != none {
-      let empty_page = empty_pages.at(new_chapter_index)
-      if empty_page < here().page() {
+    let new-chapter-index = new-chapters.position(page => page > here().page())
+    if new-chapter-index != none {
+      let empty-page = empty-pages.at(new-chapter-index)
+      if empty-page < here().page() {
         return
       }
     }
@@ -36,7 +36,7 @@
 
   // query for all <outline> label locations
   // the (possible) further pages of outline chapters are handled later
-  let outlines = find_labels(<outline>)
+  let outlines = find-labels(<outline>)
   if outlines.contains(here().page()) {
     return
   }
@@ -55,20 +55,20 @@
   }
 
   // the counter returns an array...
-  let (page_count, ) = counter(page).get()
-  if calc.even(page_count) {
+  let (page-count, ) = counter(page).get()
+  if calc.even(page-count) {
     let chapter = chapters.last()
     // explicitely select the chapter counter by specifying the depth
-    let chapter_number = counter(selector(heading.where(depth: 1))).display()
-    return chapter.supplement + " " + chapter_number + h(0.7em) + chapter.body + _underline
+    let chapter-number = counter(selector(heading.where(depth: 1))).display()
+    return chapter.supplement + " " + chapter-number + h(0.7em) + chapter.body + _underline
   }
 
   // select all chapters (depth = 1) and sections (depth = 2)
   // compared to selecting chapters and sections separately, this will conserve the order of the headings
   // just using selector(heading) would also include any (sub)subsections with depth > 2
-  let chapter_section_selector = selector(heading.where(depth: 1).or(heading.where(depth: 2)))
+  let chapter-section-selector = selector(heading.where(depth: 1).or(heading.where(depth: 2)))
 
-  let headings = query(chapter_section_selector.before(here()))
+  let headings = query(chapter-section-selector.before(here()))
   if (headings.last().depth == 1) {
     return h(1fr) + "no sections yet..." + _underline
   }
@@ -76,44 +76,44 @@
   let section = headings.last()
   // using the selector(heading.where(depth: 2)) will just count the sections on their own
   // instead of the sections numbers 1.1, 1.2, 2.1 the output will be 0.1, 0.2, 0.3
-  // the chapter_section_selector will ensure that the correct section number is used
-  let section_number = counter(chapter_section_selector).display()
-  return h(1fr) + section.supplement + " " + section_number + h(0.7em) + section.body + _underline
+  // the chapter-section-selector will ensure that the correct section number is used
+  let section-number = counter(chapter-section-selector).display()
+  return h(1fr) + section.supplement + " " + section-number + h(0.7em) + section.body + _underline
 }
 
-#let page_footer = context {
+#let page-footer = context {
   // compared to the header, the footer is only supposed to be omitted on empty pages
   // the pages with the <new-chapter> label therefore have to be conserved 
   //
-  // since the page breaks in chapter_heading() are inserted after the <empty-page> label,
+  // since the page breaks in chapter-heading() are inserted after the <empty-page> label,
   // the selector has to look "before" the current page to find the relevant label
-  let empty_page_labels = query(selector(<empty-page>).before(here()))
-  if empty_page_labels.len() > 0 {
-    let empty_page = empty_page_labels.last().location().page()
+  let empty-page-labels = query(selector(<empty-page>).before(here()))
+  if empty-page-labels.len() > 0 {
+    let empty-page = empty-page-labels.last().location().page()
     // look back at the most recent <new-chapter> label
-    let new_chapter = query(selector(<new-chapter>).before(here())).last().location().page()
+    let new-chapter = query(selector(<new-chapter>).before(here())).last().location().page()
     // check that there is no <new-chapter> label on the current page
-    if (new_chapter != here().page()) and (empty_page + 1 == here().page()) {
+    if (new-chapter != here().page()) and (empty-page + 1 == here().page()) {
       return
     }
   }
 
   // left/right align the page number on even/odd pages
-  let page_display = counter(page).display(here().page-numbering())
-  return if calc.even(here().page()) { page_display } else { h(1fr) + page_display }
+  let page-display = counter(page).display(here().page-numbering())
+  return if calc.even(here().page()) { page-display } else { h(1fr) + page-display }
 }
 
 // labels can only be used in markup mode
-#let chapter_heading(it) = [
-  #let (page_count, ) = counter(page).get()
+#let chapter-heading(it) = [
+  #let (page-count, ) = counter(page).get()
   #[] <empty-page>
   #pagebreak(to: "even", weak: true)
   #[] <new-chapter>
   #pagebreak(to: "odd", weak: true)
 
-  #let chapter_number = locate(loc => counter(heading).at(loc).first())
+  #let chapter-number = locate(loc => counter(heading).at(loc).first())
   #v(2em)
-  #h(1fr) CHAPTER #chapter_number
+  #h(1fr) CHAPTER #chapter-number
   #v(1em)
 
   // the set rule for the text also applies to the lines
@@ -162,11 +162,11 @@
     margin: (left: 30mm, right: 30mm, top: 40mm, bottom: 40mm),
     numbering: "1",
     number-align: center,
-    header: page_header,
-    footer: page_footer,
+    header: page-header,
+    footer: page-footer,
   )
-  set heading(numbering: "1.1", supplement: heading_supplement)
-  show heading.where(level: 1): it => chapter_heading(it)
+  set heading(numbering: "1.1", supplement: heading-supplement)
+  show heading.where(level: 1): it => chapter-heading(it)
 
   set par(justify: true, first-line-indent: 1em)
   let body-font = "New Computer Modern"

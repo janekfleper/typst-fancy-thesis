@@ -1,4 +1,4 @@
-#import "template.typ": thesis
+#import "template.typ": thesis, find-labels
 
 #show: thesis.with(
   title: "Blazingly Fast Thesis Typesetting",
