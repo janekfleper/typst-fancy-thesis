@@ -163,28 +163,47 @@
   #v(1em)
 ]
 
-#let styledOutline(
-  title,
+#let outline-heading(it) = {
+  pagebreak(weak: true)
+  set text(size: 24pt)
+  text(it.body)
+  line(length: 100%)
+  v(1em)
+}
+
+#let table-of-contents(
+  title: none,
   target: heading.where(outlined: true),
   depth: 3,
   indent: auto,
-  fill: repeat([.]),
-  outlined: false
-  ) = [
-  // override the show-rule for the chapter heading
-  #show heading: it => {
-    set text(size: 24pt)
-    text(it.body)
-    line(length: 100%)
-    v(1em)
-  }
-
-  #pagebreak(weak: true)
-  // use a dummy heading to allow the "outlined" parameter to be applied to the outline
-  #heading(depth: 1, numbering: none, outlined: outlined)[#title] <outline>
-  #show heading: none // completely hide the actual title of the outline
-  #outline(title: "", target: target, depth: depth, indent: indent, fill: fill)
+  fill: repeat[.]
+) = [
+  #if title == none { title = "Contents" }
+  #show heading: outline-heading
+  #heading(depth: 1, numbering: none, outlined: false)[#title] <outline>
+  #outline(title: none, target: target, depth: depth, indent: indent, fill: fill)
 ]
+
+#let list-of-figures(
+  title: none,
+  target: figure.where(kind: figure),
+) = [
+  #if title == none { title = "List of Figures" }
+  #show heading: outline-heading
+  #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
+  #outline(title: none, target: target)
+]
+
+#let list-of-tables(
+  title: none,
+  target: figure.where(kind: table),
+) = [
+  #if title == none { title = "List of Tables" }
+  #show heading: outline-heading
+  #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
+  #outline(title: none, target: target)
+]
+
 
 #let thesis(
   title: "",
@@ -217,12 +236,12 @@
   {
     set page(numbering: "i")
     counter(page).update(1)
-    styledOutline("Contents")
+    table-of-contents()
   }
 
   counter(page).update(1)
   body
 
-  styledOutline("List of Figures", target: figure.where(kind: figure), outlined: true)
-  styledOutline("List of Tables", target: figure.where(kind: table), outlined: true)
+  list-of-figures()
+  list-of-tables()
 }
