@@ -163,6 +163,18 @@
   #v(1em)
 ]
 
+// Style the outline title similar to the chapter title
+// 
+// This function is supposed to be used as a show rule for headings in the
+// scopes where the outlines are used/defined
+// ```
+// show heading: outline-heading
+// ```
+//
+// Compared to the chapter-heading this only creates a single weak pagebreak
+// and only the actual heading title is displayed. The supplement is omitted
+// since the outline headings are not numbered anyway, and the horizontal line
+// above the title is not shown either.
 #let outline-heading(it) = {
   pagebreak(weak: true)
   set text(size: 24pt)
@@ -171,6 +183,19 @@
   v(1em)
 }
 
+// Create the table of contents
+//
+// This is a convenience function that wraps the actual `outline()`. Instead
+// of using the `title` parameter of the `outline()`, a heading (of depth 1) is
+// used for the outline title. This is done to add the <outline> label to this
+// page which is required to hide the page-header.
+//
+// - title (str, none, auto, content): Title, defaults to "Contents"
+// - target (label, selector, location, function): Elements to include in the table of contents, defaults to `heading.where(outlined: true)`
+// - depth (int, none): Maximum depth to show in the table of contents, defaults to 3
+// - indent (auto, none, bool, relative, function): Indent of the outline entries, defaults to auto
+// - fill (content, none): Content to fill the space in the outline entries, defaults to [.]
+// -> content
 #let table-of-contents(
   title: none,
   target: heading.where(outlined: true),
@@ -184,6 +209,18 @@
   #outline(title: none, target: target, depth: depth, indent: indent, fill: fill)
 ]
 
+// Create the list of figures
+//
+// This is a convenience function that wraps the actual `outline()`. Instead
+// of using the `title` parameter of the `outline()`, a heading (of depth 1) is
+// used for the outline title. This is done to add the <outline> label to this
+// page which is required to hide the page-header. In addition, the parameter
+// `outlined` of the heading is set to `true` to include the list of figures in
+// the table of contents.
+//
+// - title (str, none, auto, content): Title, defaults to "List of Figures"
+// - target (label, selector, location, function): Elements to include in the list of figures, defaults to `figure.where(kind: figure)`
+// -> content
 #let list-of-figures(
   title: none,
   target: figure.where(kind: figure),
@@ -194,6 +231,18 @@
   #outline(title: none, target: target)
 ]
 
+// Create the list of tables
+//
+// This is a convenience function that wraps the actual `outline()`. Instead
+// of using the `title` parameter of the `outline()`, a heading (of depth 1) is
+// used for the outline title. This is done to add the <outline> label to this
+// page which is required to hide the page-header. In addition, the parameter
+// `outlined` of the heading is set to `true` to include the list of tables in
+// the table of contents.
+//
+// - title (str, none, auto, content): Title, defaults to "List of Tables"
+// - target (label, selector, location, function): Elements to include in the list of tables, defaults to `figure.where(kind: table)`
+// -> content
 #let list-of-tables(
   title: none,
   target: figure.where(kind: table),
