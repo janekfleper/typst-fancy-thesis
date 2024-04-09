@@ -183,6 +183,39 @@
   v(1em)
 }
 
+// Outline titles in Enlish and German
+//
+// The title for the table-of-contents is already built into Typst, even with
+// multi-language support. Since the title is used directly in a heading, this
+// default value for the outline cannot be used anymore.
+// For the list of figures/tables there is no built-in title in any language.
+//
+// - outline-type (str): "table-of-contents", "list-of-figures" or "list-of-tables"
+// -> content
+#let outline-title(outline-type) = context {
+  if outline-type == "table-of-contents" {
+    if text.lang == "en" {
+      [Table of Contents]
+    } else if text.lang == "de" {
+      [Inhaltsverzeichnis]
+    }
+  } else if outline-type == "list-of-figures" {
+    if text.lang == "en" {
+      [List of Figures]
+    } else if text.lang == "de" {
+      [Abbildungsverzeichnis]
+    }
+  } else if outline-type == "list-of-tables" {
+    if text.lang == "en" {
+      [List of Tables]
+    } else if text.lang == "de" {
+      [Tabellenverzeichnis]
+    }
+  } else {
+    panic("Unknown outline-type '" + outline-type + "'")
+  }
+}
+
 // Create the table of contents
 //
 // This is a convenience function that wraps the actual `outline()`. Instead
@@ -190,7 +223,7 @@
 // used for the outline title. This is done to add the <outline> label to this
 // page which is required to hide the page-header.
 //
-// - title (str, auto, none, content): Title, defaults to "Contents"
+// - title (str, auto, none, content): Title, defaults to "Contents"/"Inhaltsverzeichnis"
 // - target (label, selector, location, function): Elements to include in the table of contents, defaults to `heading.where(outlined: true)`
 // - depth (int, none): Maximum depth to show in the table of contents, defaults to 3
 // - indent (auto, none, bool, relative, function): Indent of the outline entries, defaults to auto
@@ -203,7 +236,7 @@
   indent: auto,
   fill: repeat[.]
 ) = [
-  #if title == auto { title = "Contents" }
+  #if title == auto { title = outline-title("table-of-contents")}
   #show heading: outline-heading
   #heading(depth: 1, numbering: none, outlined: false)[#title] <outline>
   #outline(title: none, target: target, depth: depth, indent: indent, fill: fill)
@@ -218,14 +251,14 @@
 // `outlined` of the heading is set to `true` to include the list of figures in
 // the table of contents.
 //
-// - title (str, auto, none, content): Title, defaults to "List of Figures"
+// - title (str, auto, none, content): Title, defaults to "List of Figures"/"Abbildungsverzeichnis"
 // - target (label, selector, location, function): Elements to include in the list of figures, defaults to `figure.where(kind: figure)`
 // -> content
 #let list-of-figures(
   title: auto,
   target: figure.where(kind: figure),
 ) = [
-  #if title == auto { title = "List of Figures" }
+  #if title == auto { title = outline-title("list-of-figures")}
   #show heading: outline-heading
   #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
   #outline(title: none, target: target)
@@ -240,14 +273,14 @@
 // `outlined` of the heading is set to `true` to include the list of tables in
 // the table of contents.
 //
-// - title (str, auto, none, content): Title, defaults to "List of Tables"
+// - title (str, auto, none, content): Title, defaults to "List of Tables"/"Tabellenverzeichnis"
 // - target (label, selector, location, function): Elements to include in the list of tables, defaults to `figure.where(kind: table)`
 // -> content
 #let list-of-tables(
   title: auto,
   target: figure.where(kind: table),
 ) = [
-  #if title == auto { title = "List of Tables" }
+  #if title == auto { title = outline-title("list-of-tables")}
   #show heading: outline-heading
   #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
   #outline(title: none, target: target)
