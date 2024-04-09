@@ -152,11 +152,10 @@
 
   #let chapter-number = locate(loc => counter(heading).at(loc).first())
   #v(2em)
-  #h(1fr) #upper[#it.supplement] #chapter-number
+  #h(1fr) #text(size: 0.7 * text.size)[#upper[#it.supplement]] #chapter-number
   #v(1em)
 
   // the set rule for the text also applies to the lines
-  #set text(size: 24pt)
   #line(length: 100%)
   #text(it.body)
   #line(length: 100%)
@@ -177,7 +176,6 @@
 // above the title is not shown either.
 #let outline-heading(it) = {
   pagebreak(weak: true)
-  set text(size: 24pt)
   text(it.body)
   line(length: 100%)
   v(1em)
@@ -306,6 +304,7 @@
     footer: page-footer,
   )
   set heading(numbering: "1.1", supplement: heading-supplement)
+  show heading.where(level: 1): set text(size: 24pt)
   show heading.where(level: 1): it => chapter-heading(it)
 
   set par(justify: true, first-line-indent: 1em)
