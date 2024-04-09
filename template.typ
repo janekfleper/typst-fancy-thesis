@@ -1,5 +1,11 @@
 #import "titlepage.typ": titlepage
 
+// Change the default heading supplement based on the depth
+//
+// This function is supposed to be used in the set rule for headings
+// ```
+// set heading(supplement: heading-supplement)`
+// ```
 #let heading-supplement(it) = {
   if it.depth == 1 {
     return [Chapter]
