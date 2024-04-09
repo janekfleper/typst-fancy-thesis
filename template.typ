@@ -28,6 +28,26 @@
   query(name).map(label => label.location().page())
 }
 
+// Modified page header to display heading information
+//
+// This is supposed to be passed to the set rule of the page 
+// ```
+// set page(header: page-header)
+// ```
+//
+// By comparing the current `here().page()` in the context to the pages where
+// the <empty-page> and <new-chapter> labels are placed, the header is hidden
+// on pages where a new chapter starts and on empty pages that are inserted to
+// ensure that a new chapter starts on an odd page.
+// The header is also hidden on all pages where a heading with the <outline>
+// label is found. And if the heading numbering is (currently) set to none,
+// the header is also hidden. This is mainly intended for outline chapters,
+// but it could also be used elsewhere.
+//
+// On all pages that show a header, the content alternates between the current
+// chapter name and the current section name. On even pages the chapter is
+// displayed with a 'left' alignment and on odd pages the section is displayed
+// with a 'right' alignment.
 #let page-header = context {
   let empty-pages = find-labels(<empty-page>)
   let new-chapters = find-labels(<new-chapter>)
