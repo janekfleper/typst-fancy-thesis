@@ -91,6 +91,24 @@
   return h(1fr) + section.supplement + " " + section-number + h(0.7em) + section.body + _underline
 }
 
+// Modified page footer
+//
+// This is supposed to be passed to the set rule of the page 
+// ```
+// set page(footer: footer-header)
+// ```
+// 
+// The footer will only be hidden on empty pages that are inserted to ensure
+// that the next chapter starts on an odd page. There is always an offset of 1
+// between the location of the <empty-page> label and the location of the
+// actual empty page. The query for <empty-page> labels can therefore just
+// look at the most recent label before the current page in the context.
+// The label <empty-page> will be placed regardless of whether an empty page
+// is actually added. It is therefore necessary to also check that the current
+// page does NOT have a <new-chapter> label.
+//
+// The page numbers are aligned to the left/right on even/odd pages which is
+// always the 'outside' alignment when the document is printed.
 #let page-footer = context {
   // compared to the header, the footer is only supposed to be omitted on empty pages
   // the pages with the <new-chapter> label therefore have to be conserved 
@@ -100,9 +118,7 @@
   let empty-page-labels = query(selector(<empty-page>).before(here()))
   if empty-page-labels.len() > 0 {
     let empty-page = empty-page-labels.last().location().page()
-    // look back at the most recent <new-chapter> label
     let new-chapter = query(selector(<new-chapter>).before(here())).last().location().page()
-    // check that there is no <new-chapter> label on the current page
     if (new-chapter != here().page()) and (empty-page + 1 == here().page()) {
       return
     }
