@@ -299,7 +299,6 @@
   set page(
     margin: (left: 30mm, right: 30mm, top: 40mm, bottom: 40mm),
     numbering: "1",
-    number-align: center,
     header: page-header,
     footer: page-footer,
   )
