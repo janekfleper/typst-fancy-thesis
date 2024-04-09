@@ -123,7 +123,26 @@
   if calc.even(here().page()) { page-display } else { h(1fr) + page-display }
 }
 
-// labels can only be used in markup mode
+// Custom chapter heading
+// 
+// This function is supposed to be used as a show rule for (level 1) headings
+// ```
+// show heading.where(level: 1): it => chapter-heading(it)
+// ```
+//
+// To ensure that a new chapter always starts on a (new) odd page, two weak
+// pagebreaks are inserted. Two pagebreaks are required to position the labels
+// <empty-page> and <new-chapter> that are required for the `page-header` and
+// the `page-footer`. Without the labels, it would be perfectly fine to just
+// use a single (non-weak) pagebreak to the next odd page.
+// If the current page is even, the first pagebreak will not do anything. There
+// will be no empty page. Even though the labels are supposed to be on the same
+// page, the page of the <empty-page> label will still be one less than the
+// page of the <new-chapter> label. This effectively puts them on the same page
+// since the <empty-page> labels are always evaluated on the next page.
+// If the current page is odd, both pagebreaks will start a new page and there
+// will be a difference of two between the pages of the label pair. The page
+// in between the two labels is the empty one and can be treated accordingly.
 #let chapter-heading(it) = [
   #let (page-count, ) = counter(page).get()
   #[] <empty-page>
