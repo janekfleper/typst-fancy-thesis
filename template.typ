@@ -54,7 +54,6 @@
   if new-chapters.len() > 0 {
     if new-chapters.contains(here().page()) { return none }
 
-    // get the index of the next <new-chapter> label
     let new-chapter-index = new-chapters.position(page => page > here().page())
     if new-chapter-index != none {
       let empty-page = empty-pages.at(new-chapter-index)
@@ -62,29 +61,24 @@
     }
   }
 
-  // query for all <outline> label locations
-  // the (possible) further pages of outline chapters are handled later
   let outlines = find-labels(<outline>)
   if outlines.contains(here().page()) { return none }
+  // select all headings there to include pages in outline chapters
+  let chapters = query(selector(heading.where(depth: 1)).before(here()))
+  if chapters.len() == 0 or chapters.last().numbering == none { return none }
 
   set text(10pt)
   let _underline = move(dx: 0pt, dy: -0.7em, line(length: 100%))
 
-  let chapters = query(selector(heading.where(depth: 1)).before(here()))
-  if chapters.len() == 0 or chapters.last().numbering == none { return none }
-
-  // the counter returns an array...
   let (page-count, ) = counter(page).get()
   if calc.even(page-count) {
     let chapter = chapters.last()
-    // explicitely select the chapter counter by specifying the depth
     let chapter-number = counter(selector(heading.where(depth: 1))).display()
     return chapter.supplement + " " + chapter-number + h(0.7em) + chapter.body + _underline
   }
 
-  // select all chapters (depth = 1) and sections (depth = 2)
-  // compared to selecting chapters and sections separately, this will conserve the order of the headings
-  // just using selector(heading) would also include any (sub)subsections with depth > 2
+  // select all chapters (depth = 1) and sections (depth = 2) to conserve the
+  // actual order of the headings which ignoring (sub)subsections with depth > 2
   let chapter-section-selector = selector(heading.where(depth: 1).or(heading.where(depth: 2)))
   let headings = query(chapter-section-selector.before(here()))
   if (headings.last().depth == 1) { return none }
