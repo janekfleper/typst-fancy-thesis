@@ -17,78 +17,58 @@
   }
 }
 
-// Find the pages where a certain label is used
-//
-// - name (label): Label to query
-// -> array of int
-//
-// Wrapping the label `name` in a `selector()` would only be necessary to use
-// the modifiers `.or()`, `.and()`, `.before()` or `.after()`.
-#let find-labels(name) = {
-  query(name).map(label => label.location().page())
-}
-
 // Modified page header to display heading information
-//
+// 
 // This is supposed to be passed to the set rule of the page 
 // ```
 // set page(header: page-header)
 // ```
-//
-// By comparing the current `here().page()` in the context to the pages where
-// the <empty-page> and <new-chapter> labels are placed, the header is hidden
-// on pages where a new chapter starts and on empty pages that are inserted to
-// ensure that a new chapter starts on an odd page.
-// The header is also hidden on all pages where a heading with the <outline>
-// label is found. And if the heading numbering is (currently) set to none,
-// the header is also hidden. This is mainly intended for outline chapters,
-// but it could also be used elsewhere.
-//
+// 
+// The credit for the idea behind the function goes to https://github.com/jhalmen.
+// See https://github.com/typst/typst/discussions/3122#discussioncomment-11022031.
+// 
+// This function uses the state "content.switch" and a query of chapter starts
+// to check whether the current page should have a header. "content.switch" is
+// set to false in the function `chapter-heading()` on empty pages before the
+// start of a new chapter.
+// 
 // On all pages that show a header, the content alternates between the current
 // chapter name and the current section name. On even pages the chapter is
 // displayed with a 'left' alignment and on odd pages the section is displayed
 // with a 'right' alignment.
 #let page-header = context {
-  let empty-pages = find-labels(<empty-page>)
-  let new-chapters = find-labels(<new-chapter>)
-  if new-chapters.len() > 0 {
-    if new-chapters.contains(here().page()) { return none }
-
-    let new-chapter-index = new-chapters.position(page => page > here().page())
-    if new-chapter-index != none {
-      let empty-page = empty-pages.at(new-chapter-index)
-      if empty-page < here().page() { return none }
-    }
+  let page = here().page()
+  let is-chapter-start = query(heading.where(level: 1))
+    .any(it => it.location().page() == page)
+  if not state("content.switch", false).get() and not is-chapter-start {
+    return
   }
 
-  let outlines = find-labels(<outline>)
-  if outlines.contains(here().page()) { return none }
-  // select all headings there to include pages in outline chapters
-  let chapters = query(selector(heading.where(depth: 1)).before(here()))
-  if chapters.len() == 0 or chapters.last().numbering == none { return none }
+  state("content.pages").update(it => return it + (page,))
+  if is-chapter-start { return }
 
   set text(10pt)
   let _underline = move(dx: 0pt, dy: -0.7em, line(length: 100%))
 
-  let (page-count, ) = counter(page).get()
-  if calc.even(page-count) {
-    let chapter = chapters.last()
-    let chapter-number = counter(selector(heading.where(depth: 1))).display()
-    return chapter.supplement + " " + chapter-number + h(0.7em) + chapter.body + _underline
+  if calc.even(page) {
+    let chapter = query(heading.where(level: 1).before(here())).last()
+    align(left)[
+      #chapter.supplement
+      #numbering(chapter.numbering, ..counter(heading).at(chapter.location()))
+      #h(0.7em)
+      #chapter.body
+    ]
+  } else {
+    let section = query(heading.where(level: 2).before(here())).last()
+    align(right)[
+      #section.supplement
+      #numbering(section.numbering, ..counter(heading).at(section.location()))
+      #h(0.7em)
+      #section.body
+    ]
   }
 
-  // select all chapters (depth = 1) and sections (depth = 2) to conserve the
-  // actual order of the headings which ignoring (sub)subsections with depth > 2
-  let chapter-section-selector = selector(heading.where(depth: 1).or(heading.where(depth: 2)))
-  let headings = query(chapter-section-selector.before(here()))
-  if (headings.last().depth == 1) { return none }
-
-  let section = headings.last()
-  // using the selector(heading.where(depth: 2)) will just count the sections on their own
-  // instead of the sections numbers 1.1, 1.2, 2.1 the output will be 0.1, 0.2, 0.3
-  // the chapter-section-selector will ensure that the correct section number is used
-  let section-number = counter(chapter-section-selector).display()
-  return h(1fr) + section.supplement + " " + section-number + h(0.7em) + section.body + _underline
+  _underline
 }
 
 // Modified page footer
@@ -98,29 +78,23 @@
 // set page(footer: footer-header)
 // ```
 // 
-// The footer will only be hidden on empty pages that are inserted to ensure
-// that the next chapter starts on an odd page. There is always an offset of 1
-// between the location of the <empty-page> label and the location of the
-// actual empty page. The query for <empty-page> labels can therefore just
-// look at the most recent label before the current page in the context.
-// The label <empty-page> will be placed regardless of whether an empty page
-// is actually added. It is therefore necessary to also check that the current
-// page does NOT have a <new-chapter> label.
-//
+// The credit for the idea behind the function goes to https://github.com/jhalmen.
+// See https://github.com/typst/typst/discussions/3122#discussioncomment-11022031.
+// 
+// This function uses the state "content.pages" to check if a page has any
+// content, and should therefore have a page number
+// 
 // The page numbers are aligned to the left/right on even/odd pages which is
 // always the 'outside' alignment when the document is printed.
 #let page-footer = context {
-  let empty-page-labels = query(selector(<empty-page>).before(here()))
-  if empty-page-labels.len() > 0 {
-    let empty-page = empty-page-labels.last().location().page()
-    let new-chapter = query(selector(<new-chapter>).before(here())).last().location().page()
-    if (new-chapter != here().page()) and (empty-page + 1 == here().page()) {
-      return none 
-    }
+  let has-content = state("content.pages", (0,)).get()
+    .contains(here().page())
+  if has-content {
+    align(
+      if calc.even(here().page()) { left } else { right},
+      counter(page).display(here().page-numbering())
+    )
   }
-
-  let page-display = counter(page).display(here().page-numbering())
-  if calc.even(here().page()) { page-display } else { h(1fr) + page-display }
 }
 
 // Custom chapter heading
@@ -130,37 +104,27 @@
 // show heading.where(level: 1): it => chapter-heading(it)
 // ```
 //
-// To ensure that a new chapter always starts on a (new) odd page, two weak
-// pagebreaks are inserted. Two pagebreaks are required to position the labels
-// <empty-page> and <new-chapter> that are required for the `page-header` and
-// the `page-footer`. Without the labels, it would be perfectly fine to just
-// use a single (non-weak) pagebreak to the next odd page.
-// If the current page is even, the first pagebreak will not do anything. There
-// will be no empty page. Even though the labels are supposed to be on the same
-// page, the page of the <empty-page> label will still be one less than the
-// page of the <new-chapter> label. This effectively puts them on the same page
-// since the <empty-page> labels are always evaluated on the next page.
-// If the current page is odd, both pagebreaks will start a new page and there
-// will be a difference of two between the pages of the label pair. The page
-// in between the two labels is the empty one and can be treated accordingly.
-#let chapter-heading(it) = [
-  #let (page-count, ) = counter(page).get()
-  #[] <empty-page>
-  #pagebreak(to: "even", weak: true)
-  #[] <new-chapter>
-  #pagebreak(to: "odd", weak: true)
+// The credit for the idea behind the function goes to https://github.com/jhalmen.
+// See https://github.com/typst/typst/discussions/3122#discussioncomment-11022031.
+// 
+// The state "content.switch" will be set to false on empty pages inserted by
+// a pagebreak to an odd page before a new chapter. After the pagebreak the
+// state is set to true again. Chapter starts will be queried separately in
+// the `page-header()`.
+#let chapter-heading(it) = {
+  state("content.switch").update(false)
+  pagebreak(weak: true, to: "odd")
+  state("content.switch").update(true)
 
-  #let chapter-number = locate(loc => counter(heading).at(loc).first())
-  #v(2em)
-  #h(1fr) #text(size: 0.7 * text.size)[#upper[#it.supplement]] #chapter-number
-  #v(1em)
+  v(2em)
+  align(right)[
+    #text(size: 0.7 * text.size)[#upper(it.supplement) ]
+    #numbering(it.numbering, ..counter(heading).at(it.location()))
+  ]
+  v(1em)
 
-  // the set rule for the text also applies to the lines
-  #line(length: 100%)
-  #text(it.body)
-  #line(length: 100%)
-  #v(1em)
-]
+  line(length: 100%) + it.body + line(length: 100%) + v(1em)
+}
 
 // Style the outline title similar to the chapter title
 // 
