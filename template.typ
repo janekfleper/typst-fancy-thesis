@@ -45,7 +45,7 @@
   }
 
   state("content.pages").update(it => return it + (page,))
-  if is-chapter-start { return }
+  if is-chapter-start or heading.numbering == none { return }
 
   set text(10pt)
   let _underline = move(dx: 0pt, dy: -0.7em, line(length: 100%))
