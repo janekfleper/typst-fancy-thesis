@@ -216,11 +216,11 @@
 // the table of contents.
 //
 // - title (str, auto, none, content): Title, defaults to "List of Figures"/"Abbildungsverzeichnis"
-// - target (label, selector, location, function): Elements to include in the list of figures, defaults to `figure.where(kind: figure)`
+// - target (label, selector, location, function): Elements to include in the list of figures, defaults to `figure.where(kind: image)`
 // -> content
 #let list-of-figures(
   title: auto,
-  target: figure.where(kind: figure),
+  target: figure.where(kind: image),
 ) = [
   #if title == auto { title = outline-title("list-of-figures")}
   #show heading: outline-heading
