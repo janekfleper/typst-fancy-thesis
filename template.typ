@@ -45,27 +45,31 @@
   }
 
   state("content.pages").update(it => return it + (page,))
-  if is-chapter-start or heading.numbering == none { return }
+  if is-chapter-start { return }
 
   set text(10pt)
   let _underline = move(dx: 0pt, dy: -0.7em, line(length: 100%))
 
   if calc.even(page) {
     let chapter = query(heading.where(level: 1).before(here())).last()
-    align(left)[
-      #chapter.supplement
-      #numbering(chapter.numbering, ..counter(heading).at(chapter.location()))
-      #h(0.7em)
-      #chapter.body
-    ]
+    if chapter.numbering != none {
+      align(left)[
+        #chapter.supplement
+        #numbering(chapter.numbering, ..counter(heading).at(chapter.location()))
+        #h(0.7em)
+        #chapter.body
+      ]
+    }
   } else {
     let section = query(heading.where(level: 2).before(here())).last()
-    align(right)[
-      #section.supplement
-      #numbering(section.numbering, ..counter(heading).at(section.location()))
-      #h(0.7em)
-      #section.body
-    ]
+    if section.numbering != none {
+      align(right)[
+        #section.supplement
+        #numbering(section.numbering, ..counter(heading).at(section.location()))
+        #h(0.7em)
+        #section.body
+      ]
+    }
   }
 
   _underline
