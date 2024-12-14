@@ -91,7 +91,7 @@
     .contains(here().page())
   if has-content {
     align(
-      if calc.even(here().page()) { left } else { right},
+      if calc.even(here().page()) { left } else { right },
       counter(page).display(here().page-numbering())
     )
   }
