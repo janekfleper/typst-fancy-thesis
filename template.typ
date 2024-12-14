@@ -116,12 +116,14 @@
   pagebreak(weak: true, to: "odd")
   state("content.switch").update(true)
 
-  v(2em)
-  align(right)[
-    #text(size: 0.7 * text.size)[#upper(it.supplement) ]
-    #numbering(it.numbering, ..counter(heading).at(it.location()))
-  ]
-  v(1em)
+  if it.numbering != none {
+    v(2em)
+    align(right)[
+      #text(size: 0.7 * text.size)[#upper(it.supplement) ]
+      #numbering(it.numbering, ..counter(heading).at(it.location()))
+    ]
+    v(1em)
+  }
 
   line(length: 100%) + it.body + line(length: 100%) + v(1em)
 }
