@@ -1,5 +1,45 @@
 #import "titlepage.typ": titlepage
 
+// Find the references to a label and create a list of links
+// 
+// - label (label): The label to query
+// -> content
+#let find-refs(label) = {
+  query(ref.where(target: label)).map(ref => {
+    return link(ref.location())[
+      [#counter(page).at(ref.location()).at(0)]
+    ]
+  }).join([])
+}
+
+// Place a label and references next to some content
+// 
+// - c (content): The actual content
+// - label (label): The label belonging to (the parent of) `c`
+// - refs (content, none): The references to (the parent of) `c`
+// -> content
+#let place-label-and-refs(c, label, refs) = block(width: 100%)[
+    #c
+    #place(top + left, dy: -0.9em)[
+      #set text(blue, weight: 400, size: 10pt)
+      <#str(label)>
+      refs: #if refs != none { refs } else { "none" }
+    ]
+  ]
+
+// Show rule to display the label and references
+// 
+// This function can be used as a show rule for anything that can
+// have a label.
+// ```
+// show math.equation.where(block: true): show-label-and-refs
+// ```
+#let show-label-and-refs(it) = {
+  if not it.has("label") { return it }
+  place-label-and-refs(it, it.label, find-refs(it.label))
+}
+
+
 // Change the default heading supplement based on the depth
 //
 // The supplement uses the `text.lang` in the current context.
@@ -105,7 +145,7 @@
 // 
 // This function is supposed to be used as a show rule for (level 1) headings
 // ```
-// show heading.where(level: 1): it => chapter-heading(it)
+// show heading.where(level: 1): chapter-heading(false) 
 // ```
 //
 // The credit for the idea behind the function goes to https://github.com/jhalmen.
@@ -115,7 +155,7 @@
 // a pagebreak to an odd page before a new chapter. After the pagebreak the
 // state is set to true again. Chapter starts will be queried separately in
 // the `page-header()`.
-#let chapter-heading(it) = {
+#let chapter-heading(debug) = it => {
   state("content.switch").update(false)
   pagebreak(weak: true, to: "odd")
   state("content.switch").update(true)
@@ -129,7 +169,12 @@
     v(1em)
   }
 
-  line(length: 100%) + it.body + line(length: 100%) + v(1em)
+  let body = line(length: 100%) + v(0.8em) + it.body + line(length: 100%) + v(1em)
+  if debug and it.has("label") {
+    place-label-and-refs(body, it.label, find-refs(it.label))
+  } else {
+    body
+  }
 }
 
 // Style the outline title similar to the chapter title
@@ -263,6 +308,7 @@
   institute: "",
   birthplace: "",
   date: datetime.today(),
+  debug: true,
   body,
 ) = {
   set document(title: title, author: author, date: date)
@@ -272,9 +318,16 @@
     header: page-header,
     footer: page-footer,
   )
+
+  // Call these show rules first to allow them to be overridden by special
+  // functions that manually display an item, such as `chapter-heading()`.
+  show heading: if debug { show-label-and-refs } else { it => it }
+  show figure: if debug { show-label-and-refs } else { it => it }
+  show math.equation.where(block: true): if debug { show-label-and-refs } else { it => it }
+
   set heading(numbering: "1.1", supplement: heading-supplement)
   show heading.where(level: 1): set text(size: 24pt)
-  show heading.where(level: 1): chapter-heading
+  show heading.where(level: 1): chapter-heading(debug)
 
   set par(justify: true, first-line-indent: 1em)
   let body-font = "New Computer Modern"
