@@ -1,3 +1,4 @@
+#import "@preview/headcount:0.1.0": dependent-numbering, reset-counter
 #import "titlepage.typ": titlepage
 
 // Find the references to a label and create a list of links
@@ -325,6 +326,15 @@
   show figure: if debug { show-label-and-refs } else { it => it }
   show math.equation.where(block: true): if debug { show-label-and-refs } else { it => it }
 
+  // Set and show rules for the headcount package
+  set figure(numbering: dependent-numbering("1.1", levels: 1))
+  set math.equation(numbering: dependent-numbering("(1.1)", levels: 1))
+  show heading: reset-counter(counter(figure.where(kind: image)))
+  show heading: reset-counter(counter(figure.where(kind: table)))
+  show heading: reset-counter(counter(figure.where(kind: raw)))
+  show heading: reset-counter(counter(math.equation.where(block: true)))
+
+  // Set and show rules for the customized chapter and section headings
   set heading(numbering: "1.1", supplement: heading-supplement)
   show heading.where(level: 1): set text(size: 24pt)
   show heading.where(level: 1): chapter-heading(debug)
