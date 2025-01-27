@@ -456,9 +456,12 @@
     footer: page-footer,
   )
 
+  let heading-numbering-style = "1.1"
   let figure-numbering-style = "1.1"
   let figure-numbering-levels = 1
   let figure-caption-separator = "."
+  let equation-numbering-style = "(1.1)"
+  let equation-numbering-levels = 1
 
   // Call these show rules first to allow them to be overridden by special
   // functions that manually display an item, such as `chapter-heading()`.
@@ -468,14 +471,14 @@
 
   // Set and show rules for the headcount package
   set figure(numbering: dependent-numbering(figure-numbering-style, levels: figure-numbering-levels))
-  set math.equation(numbering: dependent-numbering("(1.1)", levels: 1))
+  set math.equation(numbering: dependent-numbering(equation-numbering-style, levels: equation-numbering-levels))
   show heading: reset-counter(counter(figure.where(kind: image)))
   show heading: reset-counter(counter(figure.where(kind: table)))
   show heading: reset-counter(counter(figure.where(kind: raw)))
   show heading: reset-counter(counter(math.equation.where(block: true)))
 
   // Set and show rules for the customized chapter and section headings
-  set heading(numbering: "1.1", supplement: heading-supplement)
+  set heading(numbering: heading-numbering-style, supplement: heading-supplement)
   show heading.where(level: 1): set text(size: 24pt)
   show heading.where(level: 1): chapter-heading(debug)
 
