@@ -1,4 +1,4 @@
-#import "@preview/headcount:0.1.0": dependent-numbering, reset-counter
+#import "@preview/headcount:0.1.0": dependent-numbering, normalize-length, reset-counter
 #import "titlepage.typ": titlepage
 
 // Find the references to a label and create a list of links
@@ -301,6 +301,142 @@
 ]
 
 
+// Evaluate the dependent numbering from the headcount package
+// 
+// The function `dependent-numbering()` is meant to be passed
+// to the `numbering` field in a figure set rule. Since I have
+// to manually evaluate the numbering in captions and outline
+// entries, the function must allow evaluation for a certain
+// figure kind at a specific location.
+// 
+// - style (str): Figure numbering style
+// - levels (int): The number of heading levels to inherit 
+// - kind (figure): The figure type, e.g. `image`, `table`, etc...
+// - loc (location): The location of the figure
+// -> (str)
+#let get-dependent-numbering(style, levels, kind, loc) = numbering(
+  style,
+  ..normalize-length(counter(heading).at(loc), levels),
+  ..counter(figure.where(kind: kind)).at(loc)
+)
+
+// Split a figure caption into a title and the rest
+// 
+// The caption of a figure is usually just a block of content.
+// In the context of a thesis the caption can get quite long
+// and it would be great if the actual "title" of the figure
+// could be inferred from the caption. The title can then be
+// highlighted by using a bold font. And the title can also be
+// used in the table of figures where using the entire caption
+// would just take an insane amount of space.
+// 
+// The approach with this function is to infer the title from
+// the caption body based on a specific separator. The easiest
+// choice here is to use the full stop/period. A colon could
+// also be useful in some cases.
+// The separator is not included with either the title or the
+// rest since the outline should not show the separator. In
+// the regular figure caption, the separator is just appended
+// to the title.
+// 
+// An alternative approach is to define a short caption and a
+// long caption. The short caption will then be used for the
+// outline, and the long caption is used for the figure. This
+// is suggested in the Typst Examples Book:
+// https://sitandr.github.io/typst-examples-book/book/snippets/chapters/outlines.html#long-and-short-captions-for-the-outline
+// 
+// - body (content): The caption
+// - separator (str): The separator to infer the title
+// -> (dictionary):
+//    - title (content)
+//    - rest (content)
+#let split-figure-caption(body, separator) = {
+  if "text" in body.fields() {
+    // the actual separation is done here
+    let position = body.text.position(separator)
+    return (
+      title: if position == none { text(body.text) } else { text(body.text.slice(0, position)) } ,
+      rest: if position == none { none } else { text(body.text.slice(position + 1)) }
+    )
+  } else if "child" in body.fields() {
+    // this takes care of `styled()` functions such as `text(red)`
+    let func = body.func()
+    let args = body.styles
+    let (title, rest) = split-figure-caption(body.child, separator)
+    return (title: func(title, args), rest: if rest == none { none } else { func(rest, args) })
+  } else if "body" in body.fields() {
+    // this takes care of simple functions such as `emph()`
+    let func = body.func()
+    let (title, rest) = split-figure-caption(body.body, separator)
+    return (title: func(title), rest: if rest == none { none } else { func(rest) })
+  } else if "children" in body.fields() {
+    // this takes care of content sequences
+    let titles = ()
+    for i in range(body.children.len()) {
+      let (title, rest) = split-figure-caption(body.children.at(i), separator)
+      titles.push(title)
+      if rest != none {
+        return (
+          title: titles.join([]),
+          rest: ((rest,) + body.children.slice(i+1)).join([])
+        )
+      }
+    }
+  }
+
+  return (title: body, rest: none)
+}
+
+// Highlight the title of a figure caption
+// 
+// The supplement, numbering and the title will be bold.
+// The "rest" of the caption is just appended without any
+// changes.
+// The `dependent-numbering` from the headcount package is
+// implemented by the function `get-dependent-numbering()`.
+// 
+// - style (str): Figure numbering style
+// - levels (int): The number of heading levels to inherit 
+// - separator (str): The separator to infer the title
+// -> (content)
+#let show-figure-caption(style, levels, separator) = it => context {
+  let (title, rest) = split-figure-caption(it.body, separator)
+
+  {
+    set text(weight: 600)
+    show math.equation: math.bold
+    it.supplement + [ ]
+
+    // the dependent-numbering has to be recreated manually here...
+    // use it.kind to automatically handle the different figure types
+    get-dependent-numbering(style, levels, it.kind, here())
+    it.separator
+    title + separator
+  }
+
+  rest
+}
+
+// Use the title of a figure caption as the outline entry
+// 
+// The `dependent-numbering` from the headcount package is
+// implemented by the function `get-dependent-numbering()`.
+// 
+// - style (str): Figure numbering style
+// - levels (int): The number of heading levels to inherit 
+// - separator (str): The separator to infer the title
+// -> (content)
+#let show-figure-outline-entry(style, levels, separator) = it => context {
+  let fig = it.element
+  link(fig.location(), {
+    box(width: 2em, get-dependent-numbering(style, levels, fig.kind, fig.location()))
+    split-figure-caption(fig.caption.body, separator).title + [ ]
+    box(width: 1fr, repeat[.])
+    [ ] + it.page
+  })
+}
+
+
 #let thesis(
   title: "",
   author: "",
@@ -320,6 +456,10 @@
     footer: page-footer,
   )
 
+  let figure-numbering-style = "1.1"
+  let figure-numbering-levels = 1
+  let figure-caption-separator = "."
+
   // Call these show rules first to allow them to be overridden by special
   // functions that manually display an item, such as `chapter-heading()`.
   show heading: if debug { show-label-and-refs } else { it => it }
@@ -327,7 +467,7 @@
   show math.equation.where(block: true): if debug { show-label-and-refs } else { it => it }
 
   // Set and show rules for the headcount package
-  set figure(numbering: dependent-numbering("1.1", levels: 1))
+  set figure(numbering: dependent-numbering(figure-numbering-style, levels: figure-numbering-levels))
   set math.equation(numbering: dependent-numbering("(1.1)", levels: 1))
   show heading: reset-counter(counter(figure.where(kind: image)))
   show heading: reset-counter(counter(figure.where(kind: table)))
@@ -338,6 +478,21 @@
   set heading(numbering: "1.1", supplement: heading-supplement)
   show heading.where(level: 1): set text(size: 24pt)
   show heading.where(level: 1): chapter-heading(debug)
+
+  // Modify the captions and outline entries of figures
+  show figure.caption: show-figure-caption(figure-numbering-style, figure-numbering-levels, figure-caption-separator)
+  show outline.where(target: figure.where(kind: image)).or(
+    outline.where(target: figure.where(kind: table)).or(
+      outline.where(target: figure.where(kind: raw)) 
+    )
+  ): it => {
+    show outline.entry: show-figure-outline-entry(
+      figure-numbering-style,
+      figure-numbering-levels,
+      figure-caption-separator
+    )
+    it
+  }
 
   set par(justify: true, first-line-indent: 1em)
   let body-font = "New Computer Modern"
