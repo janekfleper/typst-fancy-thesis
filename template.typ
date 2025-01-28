@@ -422,18 +422,34 @@
 // The `dependent-numbering` from the headcount package is
 // implemented by the function `get-dependent-numbering()`.
 // 
+// A grid is used for each entry to properly align the number
+// and the title of each figure. Using two boxes here does
+// not work since the number will not be aligned to the top
+// when the title requires two lines of space.
+//
+// The hacks with the zero-width box, the Unicode word joiner
+// `sym.wj` and the nobreak space were suggested here:
+// https://forum.typst.app/t/how-to-fix-the-bug-for-outline-entries-with-long-titles/707/3
+// https://forum.typst.app/t/how-can-i-right-align-the-qed-symbol-after-a-proof/948/3
+// 
 // - style (str): Figure numbering style
 // - levels (int): The number of heading levels to inherit 
 // - separator (str): The separator to infer the title
 // -> (content)
 #let show-figure-outline-entry(style, levels, separator) = it => context {
   let fig = it.element
-  link(fig.location(), {
-    box(width: 2em, get-dependent-numbering(style, levels, fig.kind, fig.location()))
+  let number = get-dependent-numbering(style, levels, fig.kind, fig.location())
+  let body = {
     split-figure-caption(fig.caption.body, separator).title + [ ]
+    box(width: 0pt)
     box(width: 1fr, repeat[.])
-    [ ] + it.page
-  })
+    sym.wj + sym.space.nobreak + it.page
+  }
+  link(fig.location(), grid(columns: (2.4em, 1fr), number, body))
+
+  // is there a more elegant way to get the correct spacing
+  // between the grids?
+  v(-2.4em)
 }
 
 
