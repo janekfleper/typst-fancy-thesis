@@ -469,6 +469,11 @@
   show figure: if debug { show-label-and-refs } else { it => it }
   show math.equation.where(block: true): if debug { show-label-and-refs } else { it => it }
 
+  // Set and show rules for the customized chapter and section headings
+  set heading(numbering: heading-numbering-style, supplement: heading-supplement)
+  show heading.where(level: 1): set text(size: 24pt)
+  show heading.where(level: 1): chapter-heading(debug)
+
   // Set and show rules for the headcount package
   set figure(numbering: dependent-numbering(figure-numbering-style, levels: figure-numbering-levels))
   set math.equation(numbering: dependent-numbering(equation-numbering-style, levels: equation-numbering-levels))
@@ -476,11 +481,6 @@
   show heading: reset-counter(counter(figure.where(kind: table)))
   show heading: reset-counter(counter(figure.where(kind: raw)))
   show heading: reset-counter(counter(math.equation.where(block: true)))
-
-  // Set and show rules for the customized chapter and section headings
-  set heading(numbering: heading-numbering-style, supplement: heading-supplement)
-  show heading.where(level: 1): set text(size: 24pt)
-  show heading.where(level: 1): chapter-heading(debug)
 
   // Modify the captions and outline entries of figures
   show figure.caption: show-figure-caption(figure-numbering-style, figure-numbering-levels, figure-caption-separator)
