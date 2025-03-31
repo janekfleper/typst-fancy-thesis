@@ -2,34 +2,36 @@
 #import "titlepage.typ": titlepage
 
 // Find the references to a label and create a list of links
-// 
+//
 // - label (label): The label to query
 // -> content
 #let find-refs(label) = {
-  query(ref.where(target: label)).map(ref => {
-    return link(ref.location())[
-      [#counter(page).at(ref.location()).at(0)]
-    ]
-  }).join([])
+  query(ref.where(target: label))
+    .map(ref => {
+      return link(ref.location())[
+        [#counter(page).at(ref.location()).at(0)]
+      ]
+    })
+    .join([])
 }
 
 // Place a label and references next to some content
-// 
+//
 // - c (content): The actual content
 // - label (label): The label belonging to (the parent of) `c`
 // - refs (content, none): The references to (the parent of) `c`
 // -> content
 #let place-label-and-refs(c, label, refs) = block(width: 100%)[
-    #c
-    #place(top + left, dy: -0.9em)[
-      #set text(blue, weight: 400, size: 10pt)
-      <#str(label)>
-      refs: #if refs != none { refs } else { "none" }
-    ]
+  #c
+  #place(top + left, dy: -0.9em)[
+    #set text(blue, weight: 400, size: 10pt)
+    <#str(label)>
+    refs: #if refs != none { refs } else { "none" }
   ]
+]
 
 // Show rule to display the label and references
-// 
+//
 // This function can be used as a show rule for anything that can
 // have a label.
 // ```
@@ -59,28 +61,27 @@
 }
 
 // Modified page header to display heading information
-// 
-// This is supposed to be passed to the set rule of the page 
+//
+// This is supposed to be passed to the set rule of the page
 // ```
 // set page(header: page-header)
 // ```
-// 
+//
 // The credit for the idea behind the function goes to https://github.com/jhalmen.
 // See https://github.com/typst/typst/discussions/3122#discussioncomment-11022031.
-// 
+//
 // This function uses the state "content.switch" and a query of chapter starts
 // to check whether the current page should have a header. "content.switch" is
 // set to false in the function `chapter-heading()` on empty pages before the
 // start of a new chapter.
-// 
+//
 // On all pages that show a header, the content alternates between the current
 // chapter name and the current section name. On even pages the chapter is
 // displayed with a 'left' alignment and on odd pages the section is displayed
 // with a 'right' alignment.
 #let page-header = context {
   let page = here().page()
-  let is-chapter-start = query(heading.where(level: 1))
-    .any(it => it.location().page() == page)
+  let is-chapter-start = query(heading.where(level: 1)).any(it => it.location().page() == page)
   if not state("content.switch", false).get() and not is-chapter-start {
     return
   }
@@ -118,40 +119,39 @@
 
 // Modified page footer
 //
-// This is supposed to be passed to the set rule of the page 
+// This is supposed to be passed to the set rule of the page
 // ```
 // set page(footer: footer-header)
 // ```
-// 
+//
 // The credit for the idea behind the function goes to https://github.com/jhalmen.
 // See https://github.com/typst/typst/discussions/3122#discussioncomment-11022031.
-// 
+//
 // This function uses the state "content.pages" to check if a page has any
 // content, and should therefore have a page number
-// 
+//
 // The page numbers are aligned to the left/right on even/odd pages which is
 // always the 'outside' alignment when the document is printed.
 #let page-footer = context {
-  let has-content = state("content.pages", (0,)).get()
-    .contains(here().page())
+  let has-content = state("content.pages", (0,)).get().contains(here().page())
   if has-content {
     align(
       if calc.even(here().page()) { left } else { right },
-      counter(page).display(here().page-numbering())
+      counter(page).display(here().page-numbering()),
     )
   }
 }
 
 // Custom chapter heading
-// 
+//
 // This function is supposed to be used as a show rule for (level 1) headings
 // ```
-// show heading.where(level: 1): chapter-heading(false) 
+// show heading.where(level: 1): chapter-heading(false)
 // ```
 //
 // The credit for the idea behind the function goes to https://github.com/jhalmen.
 // See https://github.com/typst/typst/discussions/3122#discussioncomment-11022031.
-// 
+//
 // The state "content.switch" will be set to false on empty pages inserted by
 // a pagebreak to an odd page before a new chapter. After the pagebreak the
 // state is set to true again. Chapter starts will be queried separately in
@@ -179,7 +179,7 @@
 }
 
 // Style the outline title similar to the chapter title
-// 
+//
 // This function is supposed to be used as a show rule for headings in the
 // scopes where the outlines are used/defined
 // ```
@@ -248,9 +248,9 @@
   target: heading.where(outlined: true),
   depth: 3,
   indent: auto,
-  fill: repeat[.]
+  fill: repeat[.],
 ) = [
-  #if title == auto { title = outline-title("table-of-contents")}
+  #if title == auto { title = outline-title("table-of-contents") }
   #show heading: outline-heading
   #heading(depth: 1, numbering: none, outlined: false)[#title] <outline>
   #outline(title: none, target: target, depth: depth, indent: indent, fill: fill)
@@ -272,7 +272,7 @@
   title: auto,
   target: figure.where(kind: image),
 ) = [
-  #if title == auto { title = outline-title("list-of-figures")}
+  #if title == auto { title = outline-title("list-of-figures") }
   #show heading: outline-heading
   #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
   #outline(title: none, target: target)
@@ -294,7 +294,7 @@
   title: auto,
   target: figure.where(kind: table),
 ) = [
-  #if title == auto { title = outline-title("list-of-tables")}
+  #if title == auto { title = outline-title("list-of-tables") }
   #show heading: outline-heading
   #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
   #outline(title: none, target: target)
@@ -302,26 +302,26 @@
 
 
 // Evaluate the dependent numbering from the headcount package
-// 
+//
 // The function `dependent-numbering()` is meant to be passed
 // to the `numbering` field in a figure set rule. Since I have
 // to manually evaluate the numbering in captions and outline
 // entries, the function must allow evaluation for a certain
 // figure kind at a specific location.
-// 
+//
 // - style (str): Figure numbering style
-// - levels (int): The number of heading levels to inherit 
+// - levels (int): The number of heading levels to inherit
 // - kind (figure): The figure type, e.g. `image`, `table`, etc...
 // - loc (location): The location of the figure
 // -> (str)
 #let get-dependent-numbering(style, levels, kind, loc) = numbering(
   style,
   ..normalize-length(counter(heading).at(loc), levels),
-  ..counter(figure.where(kind: kind)).at(loc)
+  ..counter(figure.where(kind: kind)).at(loc),
 )
 
 // Split a figure caption into a title and the rest
-// 
+//
 // The caption of a figure is usually just a block of content.
 // In the context of a thesis the caption can get quite long
 // and it would be great if the actual "title" of the figure
@@ -329,7 +329,7 @@
 // highlighted by using a bold font. And the title can also be
 // used in the table of figures where using the entire caption
 // would just take an insane amount of space.
-// 
+//
 // The approach with this function is to infer the title from
 // the caption body based on a specific separator. The easiest
 // choice here is to use the full stop/period. A colon could
@@ -338,13 +338,13 @@
 // rest since the outline should not show the separator. In
 // the regular figure caption, the separator is just appended
 // to the title.
-// 
+//
 // An alternative approach is to define a short caption and a
 // long caption. The short caption will then be used for the
 // outline, and the long caption is used for the figure. This
 // is suggested in the Typst Examples Book:
 // https://sitandr.github.io/typst-examples-book/book/snippets/chapters/outlines.html#long-and-short-captions-for-the-outline
-// 
+//
 // - body (content): The caption
 // - separator (str): The separator to infer the title
 // -> (dictionary):
@@ -355,8 +355,8 @@
     // the actual separation is done here
     let position = body.text.position(separator)
     return (
-      title: if position == none { text(body.text) } else { text(body.text.slice(0, position)) } ,
-      rest: if position == none { none } else { text(body.text.slice(position + 1)) }
+      title: if position == none { text(body.text) } else { text(body.text.slice(0, position)) },
+      rest: if position == none { none } else { text(body.text.slice(position + 1)) },
     )
   } else if "child" in body.fields() {
     // this takes care of `styled()` functions such as `text(red)`
@@ -378,7 +378,7 @@
       if rest != none {
         return (
           title: titles.join([]),
-          rest: ((rest,) + body.children.slice(i+1)).join([])
+          rest: ((rest,) + body.children.slice(i + 1)).join([]),
         )
       }
     }
@@ -388,15 +388,15 @@
 }
 
 // Highlight the title of a figure caption
-// 
+//
 // The supplement, numbering and the title will be bold.
 // The "rest" of the caption is just appended without any
 // changes.
 // The `dependent-numbering` from the headcount package is
 // implemented by the function `get-dependent-numbering()`.
-// 
+//
 // - style (str): Figure numbering style
-// - levels (int): The number of heading levels to inherit 
+// - levels (int): The number of heading levels to inherit
 // - separator (str): The separator to infer the title
 // -> (content)
 #let show-figure-caption(style, levels, separator) = it => context {
@@ -418,10 +418,10 @@
 }
 
 // Use the title of a figure caption as the outline entry
-// 
+//
 // The `dependent-numbering` from the headcount package is
 // implemented by the function `get-dependent-numbering()`.
-// 
+//
 // A grid is used for each entry to properly align the number
 // and the title of each figure. Using two boxes here does
 // not work since the number will not be aligned to the top
@@ -431,9 +431,9 @@
 // `sym.wj` and the nobreak space were suggested here:
 // https://forum.typst.app/t/how-to-fix-the-bug-for-outline-entries-with-long-titles/707/3
 // https://forum.typst.app/t/how-can-i-right-align-the-qed-symbol-after-a-proof/948/3
-// 
+//
 // - style (str): Figure numbering style
-// - levels (int): The number of heading levels to inherit 
+// - levels (int): The number of heading levels to inherit
 // - separator (str): The separator to infer the title
 // -> (content)
 #let show-figure-outline-entry(style, levels, separator) = it => context {
@@ -443,9 +443,15 @@
     split-figure-caption(fig.caption.body, separator).title + [ ]
     box(width: 0pt)
     box(width: 1fr, repeat[.])
-    sym.wj + sym.space.nobreak + it.page
+    sym.wj + sym.space.nobreak + it.page()
   }
-  link(fig.location(), grid(columns: (2.4em, 1fr), number, body))
+  link(
+    fig.location(),
+    grid(
+      columns: (2.4em, 1fr),
+      number, body,
+    ),
+  )
 
   // is there a more elegant way to get the correct spacing
   // between the grids?
@@ -500,15 +506,13 @@
 
   // Modify the captions and outline entries of figures
   show figure.caption: show-figure-caption(figure-numbering-style, figure-numbering-levels, figure-caption-separator)
-  show outline.where(target: figure.where(kind: image)).or(
-    outline.where(target: figure.where(kind: table)).or(
-      outline.where(target: figure.where(kind: raw)) 
-    )
-  ): it => {
+  show outline
+    .where(target: figure.where(kind: image))
+    .or(outline.where(target: figure.where(kind: table)).or(outline.where(target: figure.where(kind: raw)))): it => {
     show outline.entry: show-figure-outline-entry(
       figure-numbering-style,
       figure-numbering-levels,
-      figure-caption-separator
+      figure-caption-separator,
     )
     it
   }
