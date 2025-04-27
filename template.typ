@@ -15,19 +15,15 @@
     .join([])
 }
 
-// Place a label and references next to some content
+// Place a label and references
 //
-// - c (content): The actual content
-// - label (label): The label belonging to (the parent of) `c`
-// - refs (content, none): The references to (the parent of) `c`
+// - label (label): The label
+// - refs (content, none): The references to the `label`
 // -> content
-#let place-label-and-refs(c, label, refs) = block(width: 100%)[
-  #c
-  #place(top + left, dy: -0.9em)[
-    #set text(blue, weight: 400, size: 10pt)
-    <#str(label)>
-    refs: #if refs != none { refs } else { "none" }
-  ]
+#let place-label-and-refs(label, refs, ..args) = place(..args)[
+  #set text(blue, weight: 400, size: 10pt)
+  <#str(label)>
+  refs: #if refs != none { refs } else { "none" }
 ]
 
 // Show rule to display the label and references
@@ -37,9 +33,24 @@
 // ```
 // show math.equation.where(block: true): show-label-and-refs
 // ```
+//
+// Wrapping the entire figure in a block to place the label and refs will break
+// the positioning of the figures. Only the figure caption is therefore wrapped
+// in the block.
 #let show-label-and-refs(it) = {
   if not it.has("label") { return it }
-  place-label-and-refs(it, it.label, find-refs(it.label))
+
+  let label-and-refs = place-label-and-refs(it.label, find-refs(it.label), top + left, dy: -0.9em)
+  if it.func() == heading or it.func() == math.equation {
+    block({ it + label-and-refs })
+  } else if it.func() == figure {
+    show figure.caption: caption => {
+      block(width: 100%, { caption + highlight(fill: white, label-and-refs) })
+    }
+    it
+  } else {
+    it
+  }
 }
 
 
@@ -170,12 +181,13 @@
     v(1em)
   }
 
-  let body = line(length: 100%) + v(0.8em) + it.body + line(length: 100%) + v(1em)
-  if debug and it.has("label") {
-    place-label-and-refs(body, it.label, find-refs(it.label))
-  } else {
-    body
-  }
+  // only wrap the actual title in the block to correctly place the label and refs
+  block({
+    if debug and it.has("label") {
+      place-label-and-refs(it.label, find-refs(it.label), top, dy: -0.9em)
+    }
+    line(length: 100%) + v(0.8em) + it.body + line(length: 100%) + v(1em)
+  })
 }
 
 // Style the outline title similar to the chapter title
