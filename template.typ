@@ -434,40 +434,42 @@
 // The `dependent-numbering` from the headcount package is
 // implemented by the function `get-dependent-numbering()`.
 //
-// A grid is used for each entry to properly align the number
-// and the title of each figure. Using two boxes here does
-// not work since the number will not be aligned to the top
-// when the title requires two lines of space.
-//
 // The hacks with the zero-width box, the Unicode word joiner
 // `sym.wj` and the nobreak space were suggested here:
 // https://forum.typst.app/t/how-to-fix-the-bug-for-outline-entries-with-long-titles/707/3
 // https://forum.typst.app/t/how-can-i-right-align-the-qed-symbol-after-a-proof/948/3
 //
+// The issue with the line wrapping of long titles was fixed in v0.13 when using
+// `it.inner()`. Since we are however customizing the inner content here, we need
+// to use the old solution to get all the spacings right.
+//
 // - style (str): Figure numbering style
 // - levels (int): The number of heading levels to inherit
 // - separator (str): The separator to infer the title
+// - repeat-gap (length): The gap for the repeat between body and page number
+// - repeat-body (content or str): The body for the repeat
+// - page-width (relative or auto): The width of the box for the page number
+// - page-align (alignment): The alignment of the page number
 // -> (content)
-#let show-figure-outline-entry(style, levels, separator) = it => context {
+#let show-figure-outline-entry(
+  style,
+  levels,
+  separator,
+  repeat-gap: 0.25em,
+  repeat-body: [.],
+  page-width: 1.5em,
+  page-align: right,
+) = it => context {
   let fig = it.element
   let number = get-dependent-numbering(style, levels, fig.kind, fig.location())
   let body = {
-    split-figure-caption(fig.caption.body, separator).title + [ ]
+    split-figure-caption(it.body(), separator).title + [ ]
     box(width: 0pt)
-    box(width: 1fr, repeat[.])
-    sym.wj + sym.space.nobreak + it.page()
+    box(width: 1fr, repeat(gap: repeat-gap, repeat-body))
+    sym.wj + sym.space.nobreak
+    box(width: page-width, align(page-align, it.page()))
   }
-  link(
-    fig.location(),
-    grid(
-      columns: (2.4em, 1fr),
-      number, body,
-    ),
-  )
-
-  // is there a more elegant way to get the correct spacing
-  // between the grids?
-  v(-2.4em)
+  link(fig.location(), it.indented(number, body))
 }
 
 
