@@ -351,6 +351,11 @@
 // the regular figure caption, the separator is just appended
 // to the title.
 //
+// Certain functions can be "protected" from splitting. The
+// best example is `math.equation` which might have decimal
+// numbers with a period as the separator. Splitting the
+// equation at the decimal separator would just feel wrong.
+//
 // An alternative approach is to define a short caption and a
 // long caption. The short caption will then be used for the
 // outline, and the long caption is used for the figure. This
@@ -359,44 +364,62 @@
 //
 // - body (content): The caption
 // - separator (str): The separator to infer the title
+// - protected (array): Functions to protect from splitting
 // -> (dictionary):
 //    - title (content)
-//    - rest (content)
-#let split-figure-caption(body, separator) = {
+//    - rest (content or none)
+#let split-figure-caption(body, separator, protected: (math.equation,)) = {
   if "text" in body.fields() {
     // the actual separation is done here
     let position = body.text.position(separator)
-    return (
-      title: if position == none { text(body.text) } else { text(body.text.slice(0, position)) },
-      rest: if position == none { none } else { text(body.text.slice(position + 1)) },
-    )
+    if position != none {
+      return (title: text(body.text.slice(0, position)), rest: text(body.text.slice(position + 1)))
+    } else {
+      return (title: body, rest: none)
+    }
   } else if "child" in body.fields() {
     // this takes care of `styled()` functions such as `text(red)`
     let func = body.func()
+    if func in protected { return (title: body, rest: none) }
     let args = body.styles
     let (title, rest) = split-figure-caption(body.child, separator)
+    if rest != none {
+      return (title: func(title, args), rest: func(rest, args))
+    } else {
+      return (title: body, rest: none)
+    }
     return (title: func(title, args), rest: if rest == none { none } else { func(rest, args) })
   } else if "body" in body.fields() {
     // this takes care of simple functions such as `emph()`
     let func = body.func()
+    if func in protected { return (title: body, rest: none) }
     let (title, rest) = split-figure-caption(body.body, separator)
-    return (title: func(title), rest: if rest == none { none } else { func(rest) })
+    if rest != none {
+      return (title: func(title), rest: func(rest))
+    } else {
+      return (title: body, rest: none)
+    }
   } else if "children" in body.fields() {
     // this takes care of content sequences
     let titles = ()
-    for i in range(body.children.len()) {
-      let (title, rest) = split-figure-caption(body.children.at(i), separator)
+    let children = body.children
+    if children.at(0, default: none) == [ ] { _ = children.remove(0, default: none) }
+    for i in range(children.len()) {
+      let (title, rest) = split-figure-caption(children.at(i), separator)
       titles.push(title)
       if rest != none {
         return (
           title: titles.join([]),
-          rest: ((rest,) + body.children.slice(i + 1)).join([]),
+          rest: ((rest,) + children.slice(i + 1)).join([]),
         )
       }
     }
-  }
 
-  return (title: body, rest: none)
+    // if the rest was none in all of the children
+    return (title: titles.join([]), rest: none)
+  } else {
+    return (title: body, rest: none)
+  }
 }
 
 // Highlight the title of a figure caption
