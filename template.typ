@@ -554,6 +554,7 @@
     it
   }
 
+  set figure(placement: auto)
   set par(justify: true, first-line-indent: 1em)
   let body-font = "New Computer Modern"
   set text(font: body-font, size: 12pt, lang: lang)
