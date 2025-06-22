@@ -539,7 +539,7 @@
   show heading: reset-counter(counter(figure.where(kind: image)))
   show heading: reset-counter(counter(figure.where(kind: table)))
   show heading: reset-counter(counter(figure.where(kind: raw)))
-  show heading: reset-counter(counter(math.equation.where(block: true)))
+  show heading: reset-counter(counter(math.equation))
 
   // Modify the captions and outline entries of figures
   show figure.caption: show-figure-caption(figure-numbering-style, figure-numbering-levels, figure-caption-separator)
