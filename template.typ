@@ -1,6 +1,40 @@
 #import "@preview/headcount:0.1.0": dependent-numbering, normalize-length, reset-counter
 #import "titlepage.typ": titlepage
 
+
+// A floating figure that is correctly targeted by references
+//
+// If the figure placement is set to `auto`, `top` or `bottom`, references to
+// the figures will point to the "original" location of the figures. In most
+// cases this will even be on a different page since the figures have "floated"
+// to their optimal position.
+//
+// The workaround here wraps the figures in a `place()` element that takes over
+// the "floating". The figure itself can use the placement `none` that results
+// in the correct pointing by the references. This was suggested in the issue
+// https://github.com/typst/typst/issues/4359#issuecomment-2743931708
+//
+// If the figure placement is not set to `none`, the references will point to
+// the caption instead of the figure. While this is better than the original
+// case, it still feels odd while navigating through the document.
+//
+// - body (content): The figure body
+// - caption (content): The figure caption
+// - label (label): The figure label
+// - placement (alignment): The placement of the figure (applied to `place()`)
+#let floating-figure(
+  body,
+  caption: [],
+  label: none,
+  placement: top,
+) = place(placement, float: true, [
+  #figure(
+    body,
+    caption: caption,
+  ) #label
+])
+
+
 // Find the references to a label and create a list of links
 //
 // - label (label): The label to query
@@ -554,7 +588,6 @@
     it
   }
 
-  set figure(placement: auto)
   set par(justify: true, first-line-indent: 1em)
   let body-font = "New Computer Modern"
   set text(font: body-font, size: 12pt, lang: lang)
