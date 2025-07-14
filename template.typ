@@ -290,37 +290,27 @@
 
 // Create the table of contents
 //
-// This is a convenience function that wraps the actual `outline()`. Instead
-// of using the `title` parameter of the `outline()`, a heading (of depth 1) is
-// used for the outline title. This is done to add the <outline> label to this
-// page which is required to hide the page-header.
-//
 // - title (str, auto, none, content): Title, defaults to "Contents"/"Inhaltsverzeichnis"
 // - target (label, selector, location, function): Elements to include in the table of contents, defaults to `heading.where(outlined: true)`
 // - depth (int, none): Maximum depth to show in the table of contents, defaults to 3
 // - indent (auto, none, bool, relative, function): Indent of the outline entries, defaults to auto
-// - fill (content, none): Content to fill the space in the outline entries, defaults to [.]
 // -> content
 #let table-of-contents(
   title: auto,
   target: heading.where(outlined: true),
   depth: 3,
   indent: auto,
-  fill: repeat[.],
-) = [
-  #if title == auto { title = outline-title("table-of-contents") }
-  #show heading: outline-heading
-  #heading(depth: 1, numbering: none, outlined: false)[#title] <outline>
-  #outline(title: none, target: target, depth: depth, indent: indent, fill: fill)
-]
+) = {
+  if title == auto { title = outline-title("table-of-contents") }
+  show heading: outline-heading
+  outline(title: title, target: target, depth: depth, indent: indent)
+}
 
 // Create the list of figures
 //
 // This is a convenience function that wraps the actual `outline()`. Instead
 // of using the `title` parameter of the `outline()`, a heading (of depth 1) is
-// used for the outline title. This is done to add the <outline> label to this
-// page which is required to hide the page-header. In addition, the parameter
-// `outlined` of the heading is set to `true` to include the list of figures in
+// used for the outline title. This is done to include the list of figures in
 // the table of contents.
 //
 // - title (str, auto, none, content): Title, defaults to "List of Figures"/"Abbildungsverzeichnis"
@@ -329,20 +319,18 @@
 #let list-of-figures(
   title: auto,
   target: figure.where(kind: image),
-) = [
-  #if title == auto { title = outline-title("list-of-figures") }
-  #show heading: outline-heading
-  #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
-  #outline(title: none, target: target)
-]
+) = {
+  if title == auto { title = outline-title("list-of-figures") }
+  show heading: outline-heading
+  heading(depth: 1, numbering: none, outlined: true, title)
+  outline(title: none, target: target)
+}
 
 // Create the list of tables
 //
 // This is a convenience function that wraps the actual `outline()`. Instead
 // of using the `title` parameter of the `outline()`, a heading (of depth 1) is
-// used for the outline title. This is done to add the <outline> label to this
-// page which is required to hide the page-header. In addition, the parameter
-// `outlined` of the heading is set to `true` to include the list of tables in
+// used for the outline title. This is done to include the list of tables in
 // the table of contents.
 //
 // - title (str, auto, none, content): Title, defaults to "List of Tables"/"Tabellenverzeichnis"
@@ -351,12 +339,12 @@
 #let list-of-tables(
   title: auto,
   target: figure.where(kind: table),
-) = [
-  #if title == auto { title = outline-title("list-of-tables") }
-  #show heading: outline-heading
-  #heading(depth: 1, numbering: none, outlined: true)[#title] <outline>
-  #outline(title: none, target: target)
-]
+) = {
+  if title == auto { title = outline-title("list-of-tables") }
+  show heading: outline-heading
+  heading(depth: 1, numbering: none, outlined: true, title)
+  outline(title: none, target: target)
+}
 
 
 // Evaluate the dependent numbering from the headcount package
