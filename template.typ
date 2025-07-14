@@ -555,7 +555,7 @@
 ) = {
   set document(title: title, author: author, date: date)
   set page(
-    margin: (left: 30mm, right: 30mm, top: 40mm, bottom: 40mm),
+    margin: (left: 25mm, right: 25mm, top: 40mm, bottom: 40mm),
     numbering: "1",
     header: page-header,
     footer: page-footer,
@@ -576,7 +576,7 @@
 
   // Set and show rules for the customized chapter and section headings
   set heading(numbering: heading-numbering-style, supplement: heading-supplement)
-  show heading.where(level: 1): set text(size: 24pt)
+  show heading.where(level: 1): set text(size: 22pt)
   show heading.where(level: 1): chapter-heading(debug)
 
   // Set and show rules for the headcount package
@@ -602,7 +602,7 @@
 
   set par(justify: true, first-line-indent: 1em)
   let body-font = "New Computer Modern"
-  set text(font: body-font, size: 12pt, lang: lang)
+  set text(font: body-font, size: 11pt, lang: lang)
 
   titlepage(title, author, type, lang, institute, birthplace, date)
 
