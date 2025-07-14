@@ -187,6 +187,20 @@
   }
 }
 
+
+// The block style for level 1 headings (outline and chapters)
+//
+// Directly using the top and bottom stroke of the block makes it easier to get
+// the horizontal lines to be symmetric around the heading title. With manually
+// placed lines, this always looked a bit "off".
+#let heading-block = block.with(
+  width: 100%,
+  sticky: true,
+  stroke: (top: 0.9pt, bottom: 0.9pt),
+  inset: (top: 0.9em, bottom: 0.9em),
+  below: 0.9em,
+)
+
 // Custom chapter heading
 //
 // This function is supposed to be used as a show rule for (level 1) headings
@@ -207,22 +221,23 @@
   state("content.switch").update(true)
 
   if it.numbering != none {
-    v(2em)
+    v(1.8em)
     align(right)[
       #text(size: 0.7 * text.size)[#upper(it.supplement) ]
       #numbering(it.numbering, ..counter(heading).at(it.location()))
     ]
-    v(1em)
+    v(0.9em)
   }
 
   // only wrap the actual title in the block to correctly place the label and refs
-  block({
+  heading-block({
     if debug and it.has("label") {
-      place-label-and-refs(it.label, find-refs(it.label), top, dy: -0.9em)
+      place-label-and-refs(it.label, find-refs(it.label), top, dy: -1.5em)
     }
-    line(length: 100%) + v(0.8em) + it.body + line(length: 100%) + v(1em)
+    it.body
   })
 }
+
 
 // Style the outline title similar to the chapter title
 //
@@ -234,13 +249,10 @@
 //
 // Compared to the chapter-heading this only creates a single weak pagebreak
 // and only the actual heading title is displayed. The supplement is omitted
-// since the outline headings are not numbered anyway, and the horizontal line
-// above the title is not shown either.
+// since the outline headings are not numbered anyway.
 #let outline-heading(it) = {
   pagebreak(weak: true)
-  text(it.body)
-  line(length: 100%)
-  v(1em)
+  heading-block(it.body)
 }
 
 // Outline titles in Enlish and German
