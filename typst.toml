@@ -1,0 +1,14 @@
+[package]
+name = "fancy-thesis"
+version = "0.1.0"
+entrypoint = "template.typ"
+authors = ["Janek Fleper <j.fleper@mailbox.org>"]
+license = "MIT-0"
+description = "A simple yet powerful template for your thesis"
+keywords = ["thesis"]
+categories = ["thesis"]
+compiler = "0.13.0"
+
+[template]
+path = "template"
+entrypoint = "thesis.typ"
