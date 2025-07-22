@@ -580,9 +580,11 @@
 
   // Modify the captions and outline entries of figures
   show figure.caption: show-figure-caption(figure-numbering-style, figure-numbering-levels, figure-caption-separator)
-  show outline
-    .where(target: figure.where(kind: image))
-    .or(outline.where(target: figure.where(kind: table)).or(outline.where(target: figure.where(kind: raw)))): it => {
+  show selector.or(
+    outline.where(target: figure.where(kind: image)),
+    outline.where(target: figure.where(kind: table)),
+    outline.where(target: figure.where(kind: raw)),
+  ): it => {
     show outline.entry: show-figure-outline-entry(
       figure-numbering-style,
       figure-numbering-levels,
