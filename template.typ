@@ -567,6 +567,9 @@
   show heading.where(level: 1): set text(size: 22pt)
   show heading.where(level: 1): chapter-heading(debug)
 
+  // Flush figures before starting a new section
+  show heading.where(level: 2): it => place.flush() + it
+
   // Set and show rules for the headcount package
   set figure(numbering: dependent-numbering(figure-numbering-style, levels: figure-numbering-levels))
   set math.equation(numbering: dependent-numbering(equation-numbering-style, levels: equation-numbering-levels))
