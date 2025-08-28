@@ -549,6 +549,7 @@
     footer: page-footer,
   )
 
+  let body-font = "New Computer Modern"
   let heading-numbering-style = "1.1"
   let figure-numbering-style = "1.1"
   let figure-numbering-levels = 1
@@ -580,6 +581,9 @@
 
   // Modify the captions and outline entries of figures
   show figure.caption: show-figure-caption(figure-numbering-style, figure-numbering-levels, figure-caption-separator)
+  show figure.caption: set text(font: body-font, size: 10pt, lang: lang)
+  show figure.caption: set align(left)
+
   show selector.or(
     outline.where(target: figure.where(kind: image)),
     outline.where(target: figure.where(kind: table)),
@@ -594,7 +598,6 @@
   }
 
   set par(justify: true, first-line-indent: 1em)
-  let body-font = "New Computer Modern"
   set text(font: body-font, size: 11pt, lang: lang)
 
   titlepage(title, author, type, lang, institute, birthplace, date)
