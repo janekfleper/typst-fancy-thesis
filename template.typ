@@ -599,6 +599,7 @@
 
   set par(justify: true, first-line-indent: 1em)
   set text(font: body-font, size: 11pt, lang: lang)
+  show math.equation.where(block: false): set text(weight: 300)
 
   titlepage(title, author, type, lang, institute, birthplace, date)
 
