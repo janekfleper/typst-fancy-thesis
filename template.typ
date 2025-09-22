@@ -571,6 +571,9 @@
   // Flush figures before starting a new section
   show heading.where(level: 2): it => place.flush() + it
 
+  // Use level 4 headings as simple paragraph titles without numbering
+  show heading.where(level: 4): set heading(numbering: none, outlined: false)
+
   // Set and show rules for the headcount package
   set figure(numbering: dependent-numbering(figure-numbering-style, levels: figure-numbering-levels))
   set math.equation(numbering: dependent-numbering(equation-numbering-style, levels: equation-numbering-levels))
