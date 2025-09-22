@@ -35,6 +35,48 @@
 ])
 
 
+// Replace references that are not in the document with the name of the label
+//
+// This is useful to compile chapters individually. The missing references
+// would otherwise raise errors that prevent the compilation of the document.
+// The basic version of this was suggested in https://forum.typst.app/t/3255/3
+// To handle citation references separately, the function checks if the label
+// contains a colon ":". This assumes that all non-citation references use the
+// prefixes "ch:", "eq:", "fig:" etc.
+//
+// - it (ref): The reference object
+// -> ref or text
+#let optional-refs(it) = {
+  if str(it.target).contains(":") and query(it.target).len() == 0 {
+    text(red, "<" + str(it.target) + ">")
+  } else {
+    it
+  }
+}
+
+
+// Create a reference to a subfigure or any other subelement
+//
+// This uses the same principle as the function `optical-refs()` internally to
+// handle reference to missing labels. The condition to filter references to
+// citations is not required here.
+//
+// - label (label): The label to the target element
+// - index (str or content): The index to append to the reference
+// -> ref or text
+#let subref(label, index) = {
+  show ref: it => {
+    if query(it.target).len() == 0 {
+      text(red, "<" + str(it.target) + ">" + index)
+    } else {
+      link(it.element.location(), it + index)
+    }
+  }
+
+  ref(label)
+}
+
+
 // Find the references to a label and create a list of links
 //
 // - label (label): The label to query
