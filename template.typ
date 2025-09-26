@@ -177,7 +177,6 @@
   if is-chapter-start { return }
 
   set text(10pt)
-  let _underline = move(dx: 0pt, dy: -0.7em, line(length: 100%))
 
   if calc.even(page) {
     let chapter = query(heading.where(level: 1).before(here())).last()
@@ -201,7 +200,7 @@
     }
   }
 
-  _underline
+  move(dy: -0.2em, line(length: 100%))
 }
 
 // Modified page footer
@@ -642,7 +641,9 @@
     it
   }
 
-  set par(justify: true, first-line-indent: 1em)
+  set par(justify: true, leading: 0.65em, spacing: 0.65em, first-line-indent: 1em)
+  show math.equation.where(block: true): set block(above: 1.2em, below: 1.2em)
+
   set text(font: body-font, size: 11pt, lang: lang)
   show math.equation.where(block: false): set text(weight: 300)
 
