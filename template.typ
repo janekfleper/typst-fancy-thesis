@@ -572,17 +572,10 @@
 
 
 #let thesis(
-  title: "",
-  author: "",
-  type: "",
   lang: "",
-  institute: "",
-  birthplace: "",
-  date: datetime.today(),
   debug: true,
   body,
 ) = {
-  set document(title: title, author: author, date: date)
   set page(
     margin: (left: 25mm, right: 25mm, top: 40mm, bottom: 40mm),
     numbering: "1",
@@ -646,8 +639,6 @@
 
   set text(font: body-font, size: 11pt, lang: lang)
   show math.equation.where(block: false): set text(weight: 300)
-
-  titlepage(title, author, type, lang, institute, birthplace, date)
 
   // apply some styles specific to the front matter
   {
