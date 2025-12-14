@@ -550,6 +550,5 @@
   set text(font: body-font, size: 11pt, lang: lang)
   show math.equation.where(block: false): set text(weight: 300)
 
-  counter(page).update(1)
   body
 }
