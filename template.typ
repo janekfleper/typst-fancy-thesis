@@ -189,8 +189,8 @@
       ]
     }
   } else {
-    let section = query(heading.where(level: 2).before(here())).last()
-    if section.numbering != none {
+    let section = query(heading.where(level: 2).before(here())).at(-1, default: none)
+    if section != none and section.numbering != none {
       align(right)[
         #section.supplement
         #numbering(section.numbering, ..counter(heading).at(section.location()))
