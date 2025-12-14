@@ -296,97 +296,6 @@
   heading-block(it.body)
 }
 
-// Outline titles in Enlish and German
-//
-// The title for the table-of-contents is already built into Typst, even with
-// multi-language support. Since the title is used directly in a heading, this
-// default value for the outline cannot be used anymore.
-// For the list of figures/tables there is no built-in title in any language.
-//
-// - outline-type (str): "table-of-contents", "list-of-figures" or "list-of-tables"
-// -> content
-#let outline-title(outline-type) = context {
-  if outline-type == "table-of-contents" {
-    if text.lang == "en" {
-      [Table of Contents]
-    } else if text.lang == "de" {
-      [Inhaltsverzeichnis]
-    }
-  } else if outline-type == "list-of-figures" {
-    if text.lang == "en" {
-      [List of Figures]
-    } else if text.lang == "de" {
-      [Abbildungsverzeichnis]
-    }
-  } else if outline-type == "list-of-tables" {
-    if text.lang == "en" {
-      [List of Tables]
-    } else if text.lang == "de" {
-      [Tabellenverzeichnis]
-    }
-  } else {
-    panic("Unknown outline-type '" + outline-type + "'")
-  }
-}
-
-// Create the table of contents
-//
-// - title (str, auto, none, content): Title, defaults to "Contents"/"Inhaltsverzeichnis"
-// - target (label, selector, location, function): Elements to include in the table of contents, defaults to `heading.where(outlined: true)`
-// - depth (int, none): Maximum depth to show in the table of contents, defaults to 3
-// - indent (auto, none, bool, relative, function): Indent of the outline entries, defaults to auto
-// -> content
-#let table-of-contents(
-  title: auto,
-  target: heading.where(outlined: true),
-  depth: 3,
-  indent: auto,
-) = {
-  if title == auto { title = outline-title("table-of-contents") }
-  show heading: outline-heading
-  outline(title: title, target: target, depth: depth, indent: indent)
-}
-
-// Create the list of figures
-//
-// This is a convenience function that wraps the actual `outline()`. Instead
-// of using the `title` parameter of the `outline()`, a heading (of depth 1) is
-// used for the outline title. This is done to include the list of figures in
-// the table of contents.
-//
-// - title (str, auto, none, content): Title, defaults to "List of Figures"/"Abbildungsverzeichnis"
-// - target (label, selector, location, function): Elements to include in the list of figures, defaults to `figure.where(kind: image)`
-// -> content
-#let list-of-figures(
-  title: auto,
-  target: figure.where(kind: image),
-) = {
-  if title == auto { title = outline-title("list-of-figures") }
-  show heading: outline-heading
-  heading(depth: 1, numbering: none, outlined: true, title)
-  outline(title: none, target: target)
-}
-
-// Create the list of tables
-//
-// This is a convenience function that wraps the actual `outline()`. Instead
-// of using the `title` parameter of the `outline()`, a heading (of depth 1) is
-// used for the outline title. This is done to include the list of tables in
-// the table of contents.
-//
-// - title (str, auto, none, content): Title, defaults to "List of Tables"/"Tabellenverzeichnis"
-// - target (label, selector, location, function): Elements to include in the list of tables, defaults to `figure.where(kind: table)`
-// -> content
-#let list-of-tables(
-  title: auto,
-  target: figure.where(kind: table),
-) = {
-  if title == auto { title = outline-title("list-of-tables") }
-  show heading: outline-heading
-  heading(depth: 1, numbering: none, outlined: true, title)
-  outline(title: none, target: target)
-}
-
 
 // Evaluate the dependent numbering from the headcount package
 //
@@ -621,6 +530,7 @@
   show figure.caption: set text(font: body-font, size: 10pt, lang: lang)
   show figure.caption: set align(left)
 
+  show outline: set heading(numbering: none, outlined: true)
   show selector.or(
     outline.where(target: figure.where(kind: image)),
     outline.where(target: figure.where(kind: table)),
@@ -640,16 +550,6 @@
   set text(font: body-font, size: 11pt, lang: lang)
   show math.equation.where(block: false): set text(weight: 300)
 
-  // apply some styles specific to the front matter
-  {
-    set page(numbering: "i")
-    counter(page).update(1)
-    table-of-contents()
-  }
-
   counter(page).update(1)
   body
-
-  list-of-figures()
-  list-of-tables()
 }
