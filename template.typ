@@ -1,5 +1,4 @@
 #import "@preview/headcount:0.1.0": dependent-numbering, normalize-length, reset-counter
-#import "titlepage.typ": titlepage
 
 
 // A floating figure that is correctly targeted by references
