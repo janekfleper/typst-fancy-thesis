@@ -560,6 +560,7 @@
   show math.equation.where(block: true): set block(above: 1.2em, below: 1.2em)
 
   set text(font: body-font, size: 11pt, lang: lang)
+  show figure: set text(font: body-font, size: 10pt, lang: lang)
   show math.equation.where(block: false): inline-equation
   show math.equation.where(block: false): set text(weight: 300)
 
