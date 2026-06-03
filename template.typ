@@ -478,6 +478,19 @@
   link(fig.location(), it.indented(number, body))
 }
 
+// Prevent equations in text from wrapping to a new line
+//
+// Just wrapping each inline equation in a box is a lot more robust than using
+// some word-joining spaces around equal and approx signs.
+#let inline-equation = box.with(
+  inset: 0em,
+  outset: 0em,
+  width: auto,
+  height: auto,
+  fill: none,
+  stroke: none,
+)
+
 
 #let thesis(
   lang: "",
@@ -547,6 +560,7 @@
   show math.equation.where(block: true): set block(above: 1.2em, below: 1.2em)
 
   set text(font: body-font, size: 11pt, lang: lang)
+  show math.equation.where(block: false): inline-equation
   show math.equation.where(block: false): set text(weight: 300)
 
   body
