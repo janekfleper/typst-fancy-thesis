@@ -531,7 +531,7 @@
   body,
 ) = {
   set page(
-    margin: (left: 25mm, right: 25mm, top: 40mm, bottom: 40mm),
+    margin: (inside: 25mm, outside: 25mm, top: 40mm, bottom: 40mm),
     numbering: "1",
     header: page-header,
     footer: page-footer,
