@@ -176,6 +176,8 @@
 // chapter name and the current section name. On even pages the chapter is
 // displayed with a 'left' alignment and on odd pages the section is displayed
 // with a 'right' alignment.
+// If the current chapter has no section, the chapter name is displayed on the odd pages with a 'right' alignment instead of the section name.
+// The displayed section is the last new section on the corresponding page.
 #let page-header = context {
   let page = here().page()
   let is-chapter-start = query(heading.where(level: 1)).any(it => it.location().page() == page)
@@ -188,8 +190,22 @@
 
   set text(10pt)
 
+  let chapter = query(heading.where(level: 1).before(here())).last()
+  let sections-on-page = query(heading.where(level: 2)).filter(it => it.location().page() == page)
+
+  let section = if sections-on-page.len() > 0 {
+    sections-on-page.first()
+  } else {
+    query(heading.where(level: 2).before(here())).at(-1, default: none)
+  }
+
+  let has-section = if section == none {
+    false
+  } else {
+    counter(heading).at(section.location()).first() == counter(heading).at(chapter.location()).first()
+  }
+
   if calc.even(page) {
-    let chapter = query(heading.where(level: 1).before(here())).last()
     if chapter.numbering != none {
       align(left)[
         #chapter.supplement
@@ -199,13 +215,19 @@
       ]
     }
   } else {
-    let section = query(heading.where(level: 2).before(here())).at(-1, default: none)
-    if section != none and section.numbering != none {
+    if has-section and section.numbering != none {
       align(right)[
         #section.supplement
         #numbering(section.numbering, ..counter(heading).at(section.location()))
         #h(0.7em)
         #section.body
+      ]
+    } else if chapter.numbering != none {
+      align(right)[
+        #chapter.supplement
+        #numbering(chapter.numbering, ..counter(heading).at(chapter.location()))
+        #h(0.7em)
+        #chapter.body
       ]
     }
   }
