@@ -646,5 +646,15 @@
   show math.equation.where(block: false): inline-equation
   show math.equation.where(block: false): set text(weight: 300)
 
+  // Make DOI and URL links small and gray in the bibliography
+  show bibliography: it => {
+    show link: set text(size: 8pt, fill: rgb("#555555"))
+    show regex("https://doi\.org/"): set text(size: 8pt, fill: rgb("#555555"))
+    it
+  }
+
+  // Add small spacing between bibliography entries
+  show bibliography: set par(spacing: 1em)
+
   body
 }
