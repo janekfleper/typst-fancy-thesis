@@ -602,6 +602,42 @@
     it
   }
 
+  // Make Outline look nice
+  show outline.entry.where(level: 1): set outline.entry(fill: none)
+  let number-gaps = (0.75em, 0.75em, 0.75em)
+  let level-indents = (0em, 1.75em, 4.15em)
+  show outline.entry: entry => {
+    let index = entry.level - 1
+    let gap = number-gaps.at(index, default: 1em)
+    let indent = level-indents.at(index, default: index * 1.7em)
+    let numbered = entry.element.numbering != none
+
+    block(
+      inset: (left: indent),
+      link(
+        entry.element.location(),
+        [
+          #entry.prefix()
+          #if numbered {h(gap)}
+          #entry.element.body
+          #box(width: 1fr, repeat(entry.fill))
+          #context counter(page).at(entry.element.location()).first()
+        ],
+      ),
+    )
+  }
+  show outline.entry: entry => {
+    if entry.level == 1 {
+      block(
+        above: 1.9em,
+        below: 0.0em,
+        strong(entry)
+      )
+    } else {
+      entry
+    }
+  }
+
   set par(justify: true, leading: 0.65em, spacing: 0.65em, first-line-indent: 1em)
   show math.equation.where(block: true): set block(above: 1.2em, below: 1.2em)
 
