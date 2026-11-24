@@ -151,9 +151,9 @@
 // ```
 #let heading-supplement(it) = context {
   if text.lang == "en" {
-    ([Chapter], [Section], [Subsection]).at(it.depth - 1, default: [])
+    ([Chapter], [Section], [Section]).at(it.depth - 1, default: [])
   } else if text.lang == "de" {
-    ([Kapitel], [Abschnitt], [Unterabschnitt]).at(it.depth - 1, default: [])
+    ([Kapitel], [Abschnitt], [Abschnitt]).at(it.depth - 1, default: [])
   }
 }
 
