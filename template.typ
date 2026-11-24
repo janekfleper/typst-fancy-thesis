@@ -20,18 +20,29 @@
 // - body (content): The figure body
 // - caption (content): The figure caption
 // - label (label): The figure label
-// - placement (alignment): The placement of the figure (applied to `place()`)
+// - placement (alignment): The placement of the figure (applied to `place()`) or none
 #let floating-figure(
   body,
   caption: [],
   label: none,
   placement: top,
-) = place(placement, float: true, [
-  #figure(
-    body,
-    caption: caption,
-  ) #label
-])
+) = if placement == none {
+    [
+      #v(1em)
+      #figure(
+        body,
+        caption: caption,
+      ) #label
+      #v(1em)
+    ]
+  } else {
+    place(placement, float: true, [
+      #figure(
+        body,
+        caption: caption,
+      ) #label
+    ])
+  }
 
 
 // Replace references that are not in the document with the name of the label
