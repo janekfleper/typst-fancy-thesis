@@ -20,18 +20,29 @@
 // - body (content): The figure body
 // - caption (content): The figure caption
 // - label (label): The figure label
-// - placement (alignment): The placement of the figure (applied to `place()`)
+// - placement (alignment): The placement of the figure (applied to `place()`) or none
 #let floating-figure(
   body,
   caption: [],
   label: none,
   placement: top,
-) = place(placement, float: true, [
-  #figure(
-    body,
-    caption: caption,
-  ) #label
-])
+) = if placement == none {
+    [
+      #v(1em)
+      #figure(
+        body,
+        caption: caption,
+      ) #label
+      #v(1em)
+    ]
+  } else {
+    place(placement, float: true, [
+      #figure(
+        body,
+        caption: caption,
+      ) #label
+    ])
+  }
 
 
 // Replace references that are not in the document with the name of the label
@@ -140,9 +151,9 @@
 // ```
 #let heading-supplement(it) = context {
   if text.lang == "en" {
-    ([Chapter], [Section], [Subsection]).at(it.depth - 1, default: [])
+    ([Chapter], [Section], [Section]).at(it.depth - 1, default: [])
   } else if text.lang == "de" {
-    ([Kapitel], [Abschnitt], [Unterabschnitt]).at(it.depth - 1, default: [])
+    ([Kapitel], [Abschnitt], [Abschnitt]).at(it.depth - 1, default: [])
   }
 }
 
@@ -165,6 +176,8 @@
 // chapter name and the current section name. On even pages the chapter is
 // displayed with a 'left' alignment and on odd pages the section is displayed
 // with a 'right' alignment.
+// If the current chapter has no section, the chapter name is displayed on the odd pages with a 'right' alignment instead of the section name.
+// The displayed section is the last new section on the corresponding page.
 #let page-header = context {
   let page = here().page()
   let is-chapter-start = query(heading.where(level: 1)).any(it => it.location().page() == page)
@@ -177,8 +190,22 @@
 
   set text(10pt)
 
+  let chapter = query(heading.where(level: 1).before(here())).last()
+  let sections-on-page = query(heading.where(level: 2)).filter(it => it.location().page() == page)
+
+  let section = if sections-on-page.len() > 0 {
+    sections-on-page.first()
+  } else {
+    query(heading.where(level: 2).before(here())).at(-1, default: none)
+  }
+
+  let has-section = if section == none {
+    false
+  } else {
+    counter(heading).at(section.location()).first() == counter(heading).at(chapter.location()).first()
+  }
+
   if calc.even(page) {
-    let chapter = query(heading.where(level: 1).before(here())).last()
     if chapter.numbering != none {
       align(left)[
         #chapter.supplement
@@ -188,13 +215,19 @@
       ]
     }
   } else {
-    let section = query(heading.where(level: 2).before(here())).at(-1, default: none)
-    if section != none and section.numbering != none {
+    if has-section and section.numbering != none {
       align(right)[
         #section.supplement
         #numbering(section.numbering, ..counter(heading).at(section.location()))
         #h(0.7em)
         #section.body
+      ]
+    } else if chapter.numbering != none {
+      align(right)[
+        #chapter.supplement
+        #numbering(chapter.numbering, ..counter(heading).at(chapter.location()))
+        #h(0.7em)
+        #chapter.body
       ]
     }
   }
@@ -238,7 +271,7 @@
   sticky: true,
   stroke: (top: 0.9pt, bottom: 0.9pt),
   inset: (top: 0.9em, bottom: 0.9em),
-  below: 0.9em,
+  below: 1.2em,
 )
 
 // Custom chapter heading
@@ -274,6 +307,7 @@
     if debug and it.has("label") {
       place-label-and-refs(it.label, find-refs(it.label), top, dy: -1.5em)
     }
+    show math.equation: set text(weight: "bold")
     it.body
   })
 }
@@ -498,7 +532,7 @@
   body,
 ) = {
   set page(
-    margin: (left: 25mm, right: 25mm, top: 40mm, bottom: 40mm),
+    margin: (inside: 25mm, outside: 25mm, top: 40mm, bottom: 40mm),
     numbering: "1",
     header: page-header,
     footer: page-footer,
@@ -529,6 +563,18 @@
   // Use level 4 headings as simple paragraph titles without numbering
   show heading.where(level: 4): set heading(numbering: none, outlined: false)
 
+  // Adjust spacing below headings
+  show heading.where(level: 2): set block(below: 1.2em)
+  show heading.where(level: 3): set block(below: 1em)
+  show heading.where(level: 4): set block(below: 1em)
+
+  // Use bold math text in headings
+  show heading: it => {
+    set text(weight: "bold")
+    show math.equation: set text(weight: "bold")
+    it
+  }
+
   // Set and show rules for the headcount package
   set figure(numbering: dependent-numbering(figure-numbering-style, levels: figure-numbering-levels))
   set math.equation(numbering: dependent-numbering(equation-numbering-style, levels: equation-numbering-levels))
@@ -556,6 +602,42 @@
     it
   }
 
+  // Make Outline look nice
+  show outline.entry.where(level: 1): set outline.entry(fill: none)
+  let number-gaps = (0.75em, 0.75em, 0.75em)
+  let level-indents = (0em, 1.75em, 4.15em)
+  show outline.entry: entry => {
+    let index = entry.level - 1
+    let gap = number-gaps.at(index, default: 1em)
+    let indent = level-indents.at(index, default: index * 1.7em)
+    let numbered = entry.element.numbering != none
+
+    block(
+      inset: (left: indent),
+      link(
+        entry.element.location(),
+        [
+          #entry.prefix()
+          #if numbered {h(gap)}
+          #entry.element.body
+          #box(width: 1fr, repeat(entry.fill))
+          #context counter(page).at(entry.element.location()).first()
+        ],
+      ),
+    )
+  }
+  show outline.entry: entry => {
+    if entry.level == 1 {
+      block(
+        above: 1.9em,
+        below: 0.0em,
+        strong(entry)
+      )
+    } else {
+      entry
+    }
+  }
+
   set par(justify: true, leading: 0.65em, spacing: 0.65em, first-line-indent: 1em)
   show math.equation.where(block: true): set block(above: 1.2em, below: 1.2em)
 
@@ -563,6 +645,16 @@
   show figure: set text(font: body-font, size: 10pt, lang: lang)
   show math.equation.where(block: false): inline-equation
   show math.equation.where(block: false): set text(weight: 300)
+
+  // Make DOI and URL links small and gray in the bibliography
+  show bibliography: it => {
+    show link: set text(size: 8pt, fill: rgb("#555555"))
+    show regex("https://doi\.org/"): set text(size: 8pt, fill: rgb("#555555"))
+    it
+  }
+
+  // Add small spacing between bibliography entries
+  show bibliography: set par(spacing: 1em)
 
   body
 }
