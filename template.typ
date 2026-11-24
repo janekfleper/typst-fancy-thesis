@@ -271,7 +271,7 @@
   sticky: true,
   stroke: (top: 0.9pt, bottom: 0.9pt),
   inset: (top: 0.9em, bottom: 0.9em),
-  below: 0.9em,
+  below: 1.2em,
 )
 
 // Custom chapter heading
@@ -307,6 +307,7 @@
     if debug and it.has("label") {
       place-label-and-refs(it.label, find-refs(it.label), top, dy: -1.5em)
     }
+    show math.equation: set text(weight: "bold")
     it.body
   })
 }
@@ -561,6 +562,18 @@
 
   // Use level 4 headings as simple paragraph titles without numbering
   show heading.where(level: 4): set heading(numbering: none, outlined: false)
+
+  // Adjust spacing below headings
+  show heading.where(level: 2): set block(below: 1.2em)
+  show heading.where(level: 3): set block(below: 1em)
+  show heading.where(level: 4): set block(below: 1em)
+
+  // Use bold math text in headings
+  show heading: it => {
+    set text(weight: "bold")
+    show math.equation: set text(weight: "bold")
+    it
+  }
 
   // Set and show rules for the headcount package
   set figure(numbering: dependent-numbering(figure-numbering-style, levels: figure-numbering-levels))
